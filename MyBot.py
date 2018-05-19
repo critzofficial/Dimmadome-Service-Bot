@@ -27,6 +27,7 @@ curse_list = ["fuck", "shit", "crap", "bitch", "nigga", "nigger", "fak", "shet",
 
 class MyClient(discord.Client):
     async def on_connect(self):
+        #Launches whenever the bot is connecting, but the script is not ready yet.
         print("Connecting...\n")
         game_name = "Connecting, please wait!"
         prebot_game = discord.Game(name=str(game_name))
@@ -34,6 +35,7 @@ class MyClient(discord.Client):
         await client.change_presence(activity=prebot_game, status=prebot_status)
 
     async def on_ready(self):
+        #Launches whenever the bot is fully ready.
         print(f"Script loaded and ready to be used!\nName: {self.user}\nID: {self.user.id}\nDiscriminator: {self.user.discriminator}\n\nCurrently running on - {len(self.guilds)} - servers!\n")
         #game_name = "Bot under development"
         game_name = f"| {p}help |"
@@ -43,9 +45,11 @@ class MyClient(discord.Client):
         await client.change_presence(activity=bot_game, status=bot_status)
 
     async def on_guild_join(self, guild):
+        #Launches whenever the bot joins a new guild. Used for the mute command.
         await guild.create_role(name="DSB Muted", permissions=discord.Permissions(permissions=66560), color=discord.Colour(value=0xFF0000), hoist=False, mentionable=False)
 
     async def on_member_join(self, member):
+        #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
         if fs.exists(f"../welc_ch_of_{member.guild.id}.txt"):
             if fs.exists(f"../welc_msg_of_{member.guild.id}.txt"):
                 with open(f"../welc_ch_of_{member.guild.id}.txt") as file1:
@@ -67,6 +71,7 @@ class MyClient(discord.Client):
         global memActivity, log_channel
         channel = message.channel
 
+        #Speaks for itself, checks if the message is sent by a bot. If not, it will check if it's a command.
         if not message.author.bot:
 
             #Log Check
@@ -88,9 +93,17 @@ class MyClient(discord.Client):
                     else:
                         pass
 
+            #Tag Command
+            if message.content.startswith(f"{p}tag"):
+                actionToDoList = message.content.split(" ")[1]
+                actionToDoRaw = "".join(actionToDoList)
+                if actionToDoRaw == "create":
+
+
             #Enable/Disable Curse Filter
             if message.content.startswith(f"{p}cursefil"):
                 if message.author.guild_permissions.administrator:
+                    #Checks the input. A bit complicated, but hey, don't blame me.
                     if "0" in message.content[len(f"{p}cursefil "):] or "1" in message.content[len(f"{p}cursefil "):]:
                         if not fs.exists(f"../cfil_of_{message.guild.id}.txt"):
                             fs.write(f"../cfil_of_{message.guild.id}.txt", "0")
@@ -117,6 +130,7 @@ class MyClient(discord.Client):
 
             #Special SAMP Command
             if message.content == f"{p}server":
+                #A special command. If you don't want this to be in your server, then you could ask me to blacklist it for this command.
                 embed_server_color = 0xff8000
                 vAAssassins = client.get_guild(424073177329565696)
                 embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
@@ -130,12 +144,15 @@ class MyClient(discord.Client):
             #Log Channel Command
             if message.content.startswith(f"{p}setlog"):
                 if message.author.guild_permissions.administrator or message.author.id == ownerID:
+                    #Here begins the fun. This sets the log channel. A whole lot of file editing. Codin' ain't easy.
                     if len(message.content[len(f"{p}setlog "):]) > 0:
+                        #This part checks if it's directly the ID.
                         if message.content.split()[1].isdigit():
                             if not fs.exists(f"../log_of_{message.guild.id}.txt"):
                                 fs.write(f"../log_of_{message.guild.id}.txt", "none")
                             fs.write(f"../log_of_{message.guild.id}.txt", message.content.split()[1])
                             await channel.send(":white_check_mark: - Log Channel set!")
+                        #This part checks if it's a simple channel mention. Handy, huh?
                         elif message.content.split()[1].startswith("<#"):
                             chanID = message.content[len(p + "setlog <#"):-1]
                             if not fs.exists(f"../log_of_{message.guild.id}.txt"):
@@ -153,6 +170,7 @@ class MyClient(discord.Client):
 
             #Mute Command
             if message.content.startswith(f"{p}mute"):
+                #REMEMBER! The mute/unmute commands require the "DSB Muted" role.
                 if message.author.guild_permissions.manage_roles or message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.mentions) > 0:
                         muteTarget = message.mentions[0]
@@ -165,6 +183,7 @@ class MyClient(discord.Client):
                             break
                     if not isAlreadyMuted:
                         if muteTarget.id == ownerID:
+                            #No way in hell you'll mute ME.
                             await channel.send(":exclamation: - Hey, you can't mute my owner!")
                         else:
                             roles = [mutedRole for mutedRole in message.guild.roles if mutedRole.name == "DSB Muted"]
@@ -188,6 +207,7 @@ class MyClient(discord.Client):
 
             #Unmute Command
             if message.content.startswith(f"{p}unmute"):
+                #Again, "DSB Muted" required at all.
                 if message.author.guild_permissions.manage_roles or message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.mentions) > 0:
                         unmuteTarget = message.mentions[0]
@@ -276,6 +296,7 @@ class MyClient(discord.Client):
 
             #@everyone Filter
             if not message.content.startswith(f"{p}osay"):
+                #The @everyone filter. Can't be deactivated. Make sure to check the requirements before thinking you can @everyone .
                 if message.mention_everyone:
                     if message.author.guild_permissions.administrator or message.author.guild_permissions.kick_members or message.author.guild_permissions.ban_members or message.author.guild_permissions.manage_channels or message.author.guild_permissions.view_audit_log or message.author.guild_permissions.manage_guild or message.author.guild_permissions.manage_messages:
                         pass
@@ -304,6 +325,7 @@ class MyClient(discord.Client):
 
             #Name Command
             if message.content.startswith(f"{p}name"):
+                #I was bored, blame my brains!
                 args = message.content.split()[1:]
                 target = args[0]
                 uName = message.guild.get_member(int(target))
@@ -326,6 +348,7 @@ class MyClient(discord.Client):
 
             #OSay Command
             if message.content.startswith(f"{p}osay"):
+                #OY! VIP ONLY!
                 has_forbidden_role = False
                 await message.delete()
                 for role in message.author.roles:
@@ -343,6 +366,7 @@ class MyClient(discord.Client):
 
             #OPM Command
             if message.content.startswith(f"{p}opm"):
+                #VIP only again.
                 try:
                     await message.delete()
                     memberToPM = message.mentions[0]
@@ -354,6 +378,7 @@ class MyClient(discord.Client):
 
             #Rand Command
             if message.content.startswith(f"{p}rand"):
+                #Randomize your number.
                 number = message.content.split()[1]
                 if number.isdigit():
                     randomized = random.uniform(1, int(number))
@@ -380,11 +405,13 @@ class MyClient(discord.Client):
 
             #Quick Quit Command
             if message.content == "q":
+                #It's a pain to write DD!quit down. Leave me alone :(
                 if message.author.id == ownerID:
                     await client.logout()
 
             #UserStats Command
             if message.content.startswith(f"{p}userstats"):
+                #This might be the longest command of all.
                 try:
                     if len(message.content.split()[1:]) != 0:
                         if len(message.mentions) > 0:
@@ -431,6 +458,7 @@ class MyClient(discord.Client):
 
             #Purge Command
             if message.content.startswith(f"{p}purge"):
+                #Remember, PURGE, not PRUNE .
                 if message.author.id == ownerID or message.author.guild_permissions.manage_messages:
                     if message.content.split()[1].isdigit():
                         await message.delete()
@@ -540,6 +568,7 @@ class MyClient(discord.Client):
 
             #Log Test Command
             if message.content == f"{p}testlog":
+                #Tests the log. Standard.
                 if fs.exists(f"../log_of_{message.guild.id}.txt"):
                     with open(f"../log_of_{message.guild.id}.txt", "r+") as file:
                         teststr = file.read()
@@ -549,6 +578,7 @@ class MyClient(discord.Client):
 
             #Set Announce Ch Command
             if message.content.startswith(f"{p}setannounce"):
+                #Sets the announcement channel for DD!announce .
                 if message.author.guild_permissions.administrator:
                     if len(message.content[len(f"{p}setannounce "):]) > 0:
                         if message.content.split()[1].isdigit():
@@ -569,6 +599,7 @@ class MyClient(discord.Client):
 
             #Announce Command
             if message.content.startswith(f"{p}announce"):
+                #Just say your text and enjoy the bot doing the work for you.
                 if message.author.guild_permissions.administrator:
                     if len(message.content[len(f"{p}announce "):]) > 0:
                         await message.delete()
@@ -586,10 +617,12 @@ class MyClient(discord.Client):
 
             #Test Command
             if message.content.startswith(f"{p}testthis"):
+                #NERF THIS!
                 await channel.send("I work!")
 
             #Set Welcome Command
             if message.content.startswith(f"{p}setwelcome"):
+                #Oh God, the simplest concepts require the best coding skills. Have fun with this.
                 if message.author.guild_permissions.administrator:
                     if len(message.channel_mentions) > 0:
                         if len(message.content.split()[2:]) > 0:
@@ -614,6 +647,7 @@ class MyClient(discord.Client):
 
             #Test Welcome Command
             if message.content.startswith(f"{p}testwelcome"):
+                #Tests the welcome feature.
                 if message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if fs.exists(f"../welc_ch_of_{message.guild.id}.txt"):
                         if fs.exists(f"../welc_msg_of_{message.guild.id}.txt"):
@@ -639,6 +673,7 @@ class MyClient(discord.Client):
 
             #Ping Command
             if message.content.startswith(f"{p}ping"):
+                #LIGHTNING FAST!...or not.
                 current_time = int(round(time.time()*1000))
                 m = await channel.send("Pong! ---ms")
                 last_time = int(round(time.time()*1000))
@@ -647,11 +682,13 @@ class MyClient(discord.Client):
 
             #Help Command
             if message.content == f"{p}help":
+                #No, I won't describe every single command. That's a real pain.
                 embed_help_colour = 0xFF00FF
                 embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
                 await channel.send(embed=embed_help)
                 await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
 
+            #Welcome Help Command
             if message.content == f"{p}help +welcome":
                 await channel.send("This bot supports a welcome feature that welcomes everyone new into the server! To enable it, use the following command:\n\n``DD!setwelcome <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member.\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
 
@@ -687,6 +724,7 @@ class MyClient(discord.Client):
 
             #Bot Gei
             if message.content == "bot gei":
+                #The holy counter against meme masters.
                 no = discord.File("C:/Users/CritZ/Pictures/nobelium.png")
                 u = discord.File("C:/Users/CritZ/Pictures/uranium.png")
                 await channel.send(file=no)
@@ -694,6 +732,7 @@ class MyClient(discord.Client):
 
             #Suggest Command
             if message.content.startswith(f"{p}suggest"):
+                #Keep the suggestions flowing! I'm bored on my own. :(
                 await message.delete()
                 suggestion = message.content.split(" ")[1:]
                 suggch = client.get_channel(423477556810088450)
