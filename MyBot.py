@@ -94,11 +94,22 @@ class MyClient(discord.Client):
                         pass
 
             #Tag Command
-            if message.content.startswith(f"{p}tag"):
-                actionToDoList = message.content.split(" ")[1]
-                actionToDoRaw = "".join(actionToDoList)
-                if actionToDoRaw == "create":
-
+            # if message.content.startswith(f"{p}tag"):
+            #     actionToDoList = message.content.split(" ")[1]
+            #     actionToDoRaw = "".join(actionToDoList)
+            #     if actionToDoRaw == "create":
+            #         tagName = message.content.split(" ")[2]
+            #         if fs.exists(f"../{"".join(tagName)}.txt"):
+            #             await channel.send(":interrobang: - The tag name is already occupied!")
+            #         else:
+            #             #Creates the tag and content associated to it.
+            #             fs.write(f"../{"".join(tagName)}.txt", "".join(message.content.split(" ")[3:]))
+            #             if not fs.exists(f"tags_by_{message.author.id}.txt"):
+            #                 fs.write(f"tags_by_{message.author.id}.txt", "".join(tagName))
+            #             else:
+            #                 fs.append(f"tags_by_{message.author.id}.txt", f"\n{"".join(tagName)}")
+            #     elif actionToDoRaw == "edit":
+            #         tagName = message.content.split(" ")[2]
 
             #Enable/Disable Curse Filter
             if message.content.startswith(f"{p}cursefil"):
