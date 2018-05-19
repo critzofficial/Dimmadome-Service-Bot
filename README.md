@@ -10,5 +10,5 @@ If you want to take a part of my code and use it for yourself, please notice tha
 
 If you're here to see the code in general, then I won't stop you. Have a good look at it! If you have any suggestions, feel free to use the * DD!suggest * command, join my support server or directly contact me if we happen to share a server!
 
-Goodbye,
+Good day,
 Doug Dimmadome
