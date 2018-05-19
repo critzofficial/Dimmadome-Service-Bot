@@ -787,7 +787,7 @@ class MyClient(discord.Client):
                 embed_help_tags.add_field(name="create <name> <value>", value="Create your own tags! Please notice that the tags can't handle any kind of file uploads. If you want to insert a file, make it be a direct link!")
                 embed_help_tags.add_field(name="edit <name> <new value>", value="Edit your own tags! Made a typo? Don't worry. This command will save you.\n**ADMIN NOTICE** - If an inappropriate tag has been located, please *delete* it instead. You can't edit tags, unless you own them.")
                 embed_help_tags.add_field(name="delete <name>", value="Deletes a tag! You MUST be the creator of the tag(s) you want to delete. If an inappropriate tag is created, contact the bot owner!")
-                embed_help_tags.add_field(name="mytags", value="Check which tags you own!\n**PLEASE NOTICE** - The bot is not compatible to mark a tag as 'deleted' if an ADMINISTRATOR removes it. If you can't seem to open your tag, it most likely means that it's been deleted by someone else.")
+                embed_help_tags.add_field(name="mytags", value="Check which tags you own!\n**PLEASE NOTICE** - The bot is not compatible to mark a tag as 'deleted' if the bot owner removes it on admin request. If you can't seem to open your tag, it most likely means that it's been deleted by the bot owner.")
                 embed_help_tags.add_field(name="Loading tags... *insert Windows XP loading sound*", value="If you want to simply load the tags, then type the name in and you're good to go!")
 
             #Good Bot
