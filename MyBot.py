@@ -141,11 +141,8 @@ class MyClient(discord.Client):
                         if tagName in userTags or message.author.id == ownerID:
                             #The actual process of deleting the tag.
                             os.remove(f"../{tagName}.txt")
-                            try:
-                                userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
-                                fs.write(f"../tags_by_{message.author.id}.txt", userTags)
-                            except:
-                                pass
+                            userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
+                            fs.write(f"../tags_by_{message.author.id}.txt", userTags)
                             await channel.send(":white_check_mark: - Tag deleted!")
                         else:
                             await channel.send(":interrobang: - You do not own this tag or lack the permission ``administrator``!")
