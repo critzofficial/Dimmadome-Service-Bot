@@ -67,6 +67,23 @@ class MyClient(discord.Client):
                     msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
                 await channel.send(msg)
 
+    async def on_member_remove(self, member):
+        #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
+        if fs.exists(f"../bye_ch_of_{member.guild.id}.txt"):
+            if fs.exists(f"../bye_msg_of_{member.guild.id}.txt"):
+                with open(f"../bye_ch_of_{member.guild.id}.txt") as file1:
+                    chID = file1.read()
+                channel = client.get_channel(int(chID))
+                with open(f"../bye_msg_of_{member.guild.id}.txt") as file2:
+                    msg = file2.read()
+                if "{USERNAME}" in msg:
+                    msg = msg.replace("{USERNAME}", f"{member.name}")
+                if "{USERID}" in msg:
+                    msg = msg.replace("{USERID}", f"{member.id}")
+                if "{SRVNAME}" in msg:
+                    msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
+                await channel.send(msg)
+
     async def on_message(self, message):
         global memActivity, log_channel
         channel = message.channel
@@ -710,6 +727,30 @@ class MyClient(discord.Client):
                 else:
                     await channel.send(":interrobang: - You don't have permission to do this!")
 
+            #Set Leave Command
+            if message.content.startswith(f"{p}setleave"):
+                if message.author.guild_permissions.administrator:
+                    if len(message.channel_mentions) > 0:
+                        if len(message.content.split()[2:]) > 0:
+                            if not fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
+                                fs.write(f"../bye_ch_of_{message.guild.id}.txt", "0")
+                            fs.write(f"../bye_ch_of_{message.guild.id}.txt", f"{message.channel_mentions[0].id}")
+                            if not fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
+                                fs.write(f"../bye_msg_of_{message.guild.id}.txt", "None")
+                            byeMsg = " ".join(message.content.split(" ")[2:])
+                            fs.write(f"../bye_msg_of_{message.guild.id}.txt", byeMsg)
+                            await channel.send(f":white_check_mark: - Channel saved as <#{message.channel_mentions[0].id}> and message saved as:\n\n{byeMsg}\n")
+                        else:
+                            await channel.send(":interrobang: - Please define a message!")
+                    else:
+                        if fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
+                            os.remove(f"../bye_msg_of_{message.guild.id}.txt")
+                        if fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
+                            os.remove(f"../bye_ch_of_{message.guild.id}.txt")
+                        await channel.send(":exclamation: - Deleted all welcome settings for this server!")
+                else:
+                    await channel.send(":interrobang: - You don't have permission to do this!")
+
             #Test Welcome Command
             if message.content.startswith(f"{p}testwelcome"):
                 #Tests the welcome feature.
@@ -733,6 +774,30 @@ class MyClient(discord.Client):
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
                     else:
                         await channel.send(f":interrobang: - No channel is set as the welcome channel! Did you use ``{p}setwelcome``?")
+                else:
+                    await channel.send(":interrobang: - You are not allowed to use this here!")
+
+            #Test Leave Command
+            if message.content.startswith(f"{p}testleave"):
+                #Tests the leave feature.
+                if message.author.guild_permissions.administrator or message.author.id == ownerID:
+                    if fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
+                        if fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
+                            with open(f"../bye_ch_of_{message.guild.id}.txt", "r+") as file1:
+                                byeCh = client.get_channel(int(file1.read()))
+                            with open(f"../bye_msg_of_{message.guild.id}.txt", "r+") as file2:
+                                msg = file2.read()
+                            if "{USERNAME}" in msg:
+                                msg = msg.replace("{USERNAME}", f"{message.author.name}")
+                            if "{USERID}" in msg:
+                                msg = msg.replace("{USERID}", f"{message.author.id}")
+                            if "{SRVNAME}" in msg:
+                                msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
+                            await byeCh.send(msg)
+                        else:
+                            await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
+                    else:
+                        await channel.send(f":interrobang: - No channel is set as the welcome channel! Did you use ``{p}setleave``?")
                 else:
                     await channel.send(":interrobang: - You are not allowed to use this here!")
 
@@ -767,11 +832,12 @@ class MyClient(discord.Client):
                 embed_help_colour = 0xFF00FF
                 embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False).add_field(name="members", value="Sends the data of all the members on the server (only name and ID).", inline=False)
                 await channel.send(embed=embed_help)
-                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
+                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome and leave feature! Make sure to check it using ``{p}help +welcome``!")
 
-            #Welcome Help Command
+            #Welcome/Leave Help Command
             if message.content == f"{p}help +welcome":
-                await channel.send("This bot supports a welcome feature that welcomes everyone new into the server! To enable it, use the following command:\n\n``DD!setwelcome <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member.\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
+                await channel.send("This bot supports a welcome and leave feature that welcomes everyone new into the server, or sends his regards to someone leaving! To enable it, use the following commands:\n\n``DD!setwelcome <channel> <message>`` and ``DD!setleave <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member. **This option does not work for the leave version!**\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
+                await channel.send("Also, don't use emojis! The bot's emoji decryptor will handle them wrong and paste them as weird code. Rather use default chat faces, for example: ``:)``, ``:(``, ``8P`` etc.")
 
             #Everyone Help Command
             if message.content == f"{p}help +everyone":
