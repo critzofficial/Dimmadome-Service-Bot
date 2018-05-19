@@ -459,7 +459,7 @@ class MyClient(discord.Client):
 
             #UserCount Command
             if message.content == f"{p}usercount":
-                await channel.send("``{}`` members are on this server!".format(len(message.guild.members)))
+                await channel.send("``{}`` members are on this server. Thank you for using me! :blush:".format(len(message.guild.members)))
 
             #Quit Command
             if message.content == f"{p}quit":
@@ -651,15 +651,19 @@ class MyClient(discord.Client):
                             if not fs.exists(f"../annch_of_{message.guild.id}.txt"):
                                 fs.write(f"../annch_of_{message.guild.id}.txt", "none")
                             fs.write(f"../annch_of_{message.guild.id}.txt", message.content.split()[1])
-                            await channel.send(":white_check_mark: - Log Channel set!")
+                            await channel.send(":white_check_mark: - Announcement Channel set!")
                         elif message.content.split()[1].startswith("<#"):
                             chanID = message.content[len(p + "setannounce <#"):-1]
                             if not fs.exists(f"../annch_of_{message.guild.id}.txt"):
                                 fs.write(f"../annch_of_{message.guild.id}.txt", "none")
                             fs.write(f"../annch_of_{message.guild.id}.txt", "".join(chanID))
-                            await channel.send(":white_check_mark: - Log Channel set!")
+                            await channel.send(":white_check_mark: - Announcement Channel set!")
                         else:
                             await channel.send(":interrobang: - The input is not right!")
+                    else:
+                        if fs.exists(f"../annch_of_{message.guild.id}.txt"):
+                            os.delete(f"../annch_of_{message.guild.id}.txt")
+                        await channel.send(":exclamation: - Announcement channel deleted!")
                 else:
                     await channel.send(":interrobang: - You can't use this!")
 
@@ -680,11 +684,6 @@ class MyClient(discord.Client):
                         await channel.send(":interrobang: - You didn't say anything!")
                 else:
                     await channel.send(":interrobang: - You're not allowed to use this command!")
-
-            #Test Command
-            if message.content.startswith(f"{p}testthis"):
-                #NERF THIS!
-                await channel.send("I work!")
 
             #Set Welcome Command
             if message.content.startswith(f"{p}setwelcome"):
@@ -746,11 +745,27 @@ class MyClient(discord.Client):
                 last_time -= current_time
                 await m.edit(content="Pong! {}ms".format(last_time))
 
+            #Test Command
+            if message.content.startswith(f"{p}testthis"):
+                #NERF THIS!
+                await channel.send("I work!")
+
+            #Member List Command
+            if message.content == f"{p}members":
+                m = await channel.send(":timer: - This command might take a few minutes, please stay patient.")
+                if not fs.exists(f"../members_of_{message.guild.id}.txt"):
+                    fs.write(f"../members_of_{message.guild.id}.txt", "")
+                for member in message.guild.members:
+                    fs.append(f"../members_of_{message.guild.id}.txt", f"Member name: {member.name} | ID: {member.id}\n")
+                memberList = discord.File(f"../members_of_{message.guild.id}.txt")
+                await channel.send(":white_check_mark: - File delivered!", file=memberList)
+                await m.delete()
+
             #Help Command
             if message.content == f"{p}help":
                 #No, I won't describe every single command. That's a real pain.
                 embed_help_colour = 0xFF00FF
-                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
+                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False).add_field(name="members", value="Sends the data of all the members on the server (only name and ID).", inline=False)
                 await channel.send(embed=embed_help)
                 await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
 
