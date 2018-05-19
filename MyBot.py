@@ -390,7 +390,8 @@ class MyClient(discord.Client):
                         if len(message.mentions) > 0:
                             intendedMember = message.mentions[0]
                         else:
-                            intendedMember = message.guild.get_member(int(message.content.split()[1:]))
+                            intMemID = "".join((message.content.split()[1:]))
+                            intendedMember = message.guild.get_member(int(intMemID))
                     else:
                         intendedMember = message.author
                     roles = intendedMember.roles
