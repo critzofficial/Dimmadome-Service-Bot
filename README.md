@@ -6,7 +6,7 @@ As I may think of it, you're either here because you want to simply look over th
 
 Firstly, no. You can't crack the token. It's safely ignored by GitHub and there is no way you will be able to reach it.
 
-If you want to take a part of my code and use it for yourself, please notice that my not is NOT written in the "commands" module of R. Danny's Discord.py extension. I use the pure rewrite version, which is more difficult for you maybe, but easier for me. If you want to make commands that my bot uses, please don't try and copy them. For your own safety.
+If you want to take a part of my code and use it for yourself, please notice that my bot is NOT written in the "commands" module of R. Danny's Discord.py extension. I use the pure rewrite version, which is more difficult for you maybe, but easier for me. If you want to make commands that my bot uses, please don't try and copy them. For your own safety.
 
 If you're here to see the code in general, then I won't stop you. Have a good look at it! If you have any suggestions, feel free to use the * DD!suggest * command, join my support server or directly contact me if we happen to share a server!
 
