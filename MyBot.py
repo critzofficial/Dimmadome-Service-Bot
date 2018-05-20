@@ -327,13 +327,13 @@ class MyClient(discord.Client):
                         unwarnTarget = message.mentions[0]
                     else:
                         unwarnTarget = message.guild.get_member(message.content.split(" ")[1])
-                    if not fs.exists(f"../admin_warns_of_{unwarnTarget.id}.txt"):
+                    if not fs.exists(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt"):
                         await channel.send("The mentioned user has never been warned at all...!")
-                    elif fs.exists(f"../admin_warns_of_{unwarnTarget.id}.txt"):
-                        with open(f"../admin_warns_of_{unwarnTarget.id}.txt", "r+") as file:
+                    elif fs.exists(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt"):
+                        with open(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt", "r+") as file:
                             warn = int(file.read())
                         if warn > 0:
-                            fs.write(f"../admin_warns_of_{unwarnTarget.id}.txt", "0")
+                            fs.write(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt", "0")
                             await channel.send("User's warns have been cleaned!")
                             file.close()
                         elif warn == 0:
@@ -348,23 +348,23 @@ class MyClient(discord.Client):
                         warnTarget = message.mentions[0]
                     else:
                         warnTarget = message.guild.get_member(message.content.split(" ")[1])
-                    if not fs.exists(f"../admin_warns_of_{warnTarget.id}.txt"):
-                        fs.write(f"../admin_warns_of_{warnTarget.id}.txt", "0")
-                    with open(f"../admin_warns_of_{warnTarget.id}.txt", "r+") as file:
+                    if not fs.exists(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt"):
+                        fs.write(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "0")
+                    with open(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "r+") as file:
                         warn = int(file.read())
                     if warn < 3:
                         warn += 1
                         await channel.send("Warn successful!")
-                        fs.write(f"../admin_warns_of_{warnTarget.id}.txt", str(warn))
+                        fs.write(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", str(warn))
                         file.close()
                     elif warn == 3:
-                        if not fs.exists(f"../ban_warns_of_{warnTarget.id}.txt"):
-                            fs.write(f"../ban_warns_of_{warnTarget.id}.txt", "0")
-                        with open(f"../ban_warns_of_{warnTarget.id}.txt", "r+") as banfile:
+                        if not fs.exists(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt"):
+                            fs.write(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "0")
+                        with open(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "r+") as banfile:
                             banwarns = banfile.read()
                         if banwarns < 2:
                             banwarns += 1
-                            fs.write(f"../ban_warns_of_{warnTarget.id}.txt", str(banwarns))
+                            fs.write(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", str(banwarns))
                             warn_kick_embed_color = 0xFFFF00
                             await warnTarget.kick(reason=f"The user has been warned by {message.author.name} and the warns have been exceeded.")
                             warn_kick_embed = discord.Embed(title="Admin Log: Member Kick", description=f"A kick has been issued on {warnTarget.name}", colour=warn_kick_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Kicked Member", value=f"{warnTarget.name}").add_field(name="Reason", value="Warns have been exceeded.")
@@ -384,16 +384,15 @@ class MyClient(discord.Client):
                     if message.author.guild_permissions.administrator or message.author.guild_permissions.kick_members or message.author.guild_permissions.ban_members or message.author.guild_permissions.manage_channels or message.author.guild_permissions.view_audit_log or message.author.guild_permissions.manage_guild or message.author.guild_permissions.manage_messages:
                         pass
                     else:
-                        if not fs.exists(f"../warns_of_{message.author.id}.txt"):
-                            fs.write(f"../warns_of_{message.author.id}.txt", "0")
+                        if not fs.exists(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt"):
+                            fs.write(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", "0")
                         with open('../warns_of_{}.txt'.format(message.author.id), 'r+') as file:
                             warn = int(file.read())
                         if warn < 3:
                             warn += 1
                             await message.delete()
                             await channel.send(f"<@{message.author.id}> , please don't use ``@everyone``!")
-                            fs.write(f"../warns_of_{message.author.id}.txt", str(warn))
-                            file.close()  # here
+                            fs.write(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", str(warn))
                         elif warn == 3:
                             await message.delete()
                             filterTargetName = message.author.name
@@ -517,18 +516,18 @@ class MyClient(discord.Client):
                         memActivity = intendedMember.activity.name
                     elif not intendedMember.activity:
                         memActivity = "None"
-                    if fs.exists(f"../warns_of_{intendedMember.id}.txt"):
-                        with open(f"../warns_of_{intendedMember.id}.txt", "r+") as file1:
+                    if fs.exists(f"../warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
+                        with open(f"../warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file1:
                             filter_warns = file1.read()
                     else:
                         filter_warns = "0"
-                    if fs.exists(f"../admin_warns_of_{intendedMember.id}.txt"):
-                        with open(f"../admin_warns_of_{intendedMember.id}.txt", "r+") as file2:
+                    if fs.exists(f"../admin_warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
+                        with open(f"../admin_warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file2:
                             admin_warns = file2.read()
                     else:
                         admin_warns = "0"
-                    if fs.exists(f"../ban_warns_of_{intendedMember.id}.txt"):
-                        with open(f"../ban_warns_of_{intendedMember.id}.txt", "r+") as file3:
+                    if fs.exists(f"../ban_warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
+                        with open(f"../ban_warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file3:
                             ban_warns = file3.read()
                     else:
                         ban_warns = "0"
