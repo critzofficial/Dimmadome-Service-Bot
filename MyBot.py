@@ -828,14 +828,17 @@ class MyClient(discord.Client):
 
             #Member List Command
             if message.content == f"{p}members":
-                m = await channel.send(":timer: - This command might take a few minutes, please stay patient.")
-                if not fs.exists(f"../members_of_{message.guild.id}.txt"):
-                    fs.write(f"../members_of_{message.guild.id}.txt", "")
-                for member in message.guild.members:
-                    fs.append(f"../members_of_{message.guild.id}.txt", f"Member name: {member.name} | ID: {member.id}\n")
-                memberList = discord.File(f"../members_of_{message.guild.id}.txt")
-                await channel.send(":white_check_mark: - File delivered!", file=memberList)
-                await m.delete()
+                if message.author.id == ownerID:
+                    m = await channel.send(":timer: - This command might take a few minutes, please stay patient.")
+                    if not fs.exists(f"../members_of_{message.guild.id}.txt"):
+                        fs.write(f"../members_of_{message.guild.id}.txt", "")
+                    for member in message.guild.members:
+                        fs.append(f"../members_of_{message.guild.id}.txt", f"Member name: {member.name} | ID: {member.id}\n")
+                    memberList = discord.File(f"../members_of_{message.guild.id}.txt")
+                    await channel.send(":white_check_mark: - File delivered!", file=memberList)
+                    await m.delete()
+                else:
+                    await channel.send(":interrobang: - This command has been blocked for security, as it would lag the bot on giant servers! Please contact the owner if you'd wish to use this.")
 
             #Help Command
             if message.content == f"{p}help":
