@@ -112,76 +112,88 @@ class MyClient(discord.Client):
 
             #Tag Command
             if message.content.startswith(f"{p}tag"):
-                actionToDoList = message.content.split(" ")[1]
-                actionToDoRaw = "".join(actionToDoList)
-                if actionToDoRaw == "create":
-                    tagName = message.content.split(" ")[2]
-                    tagStr = "".join(tagName)
-                    if fs.exists(f"../{tagStr}.txt"):
-                        await channel.send(":interrobang: - The tag name is already occupied!")
-                    else:
-                        #Creates the tag and content associated to it, and records it into the player's ID secretly.
-                        if len(message.content.split(" ")[3:]) > 0:
-                            bannedTags = ["create", "delete", "edit", "mytags"]
-                            if tagName not in bannedTags:
-                                tagStr = "".join(tagName)
-                                fs.write(f"../{tagStr}.txt", " ".join(message.content.split(" ")[3:]))
-                                if not fs.exists(f"../tags_by_{message.author.id}.txt"):
-                                    fs.write(f"../tags_by_{message.author.id}.txt", "".join(tagName))
+                if len(message.content[len(f"{p}tag "):]) > 0:
+                    actionToDoList = message.content.split(" ")[1]
+                    actionToDoRaw = "".join(actionToDoList)
+                    if actionToDoRaw == "create":
+                        if len(message.content[len(f"{p}tag create "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            tagStr = "".join(tagName)
+                            if fs.exists(f"../{tagStr}.txt"):
+                                await channel.send(":interrobang: - The tag name is already occupied!")
+                            else:
+                                #Creates the tag and content associated to it, and records it into the player's ID secretly.
+                                if len(message.content.split(" ")[3:]) > 0:
+                                    bannedTags = ["create", "delete", "edit", "mytags"]
+                                    if tagName not in bannedTags:
+                                        tagStr = "".join(tagName)
+                                        fs.write(f"../{tagStr}.txt", " ".join(message.content.split(" ")[3:]))
+                                        if not fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                            fs.write(f"../tags_by_{message.author.id}.txt", "".join(tagName))
+                                        else:
+                                            fs.append(f"../tags_by_{message.author.id}.txt", f"\n{tagStr}")
+                                        await channel.send(":white_check_mark: - Tag created!")
+                                    else:
+                                        await channel.send(":exclamation: - The tag name you chose is banned for usage by the bot!")
                                 else:
-                                    fs.append(f"../tags_by_{message.author.id}.txt", f"\n{tagStr}")
-                                await channel.send(":white_check_mark: - Tag created!")
+                                    await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
+                        else:
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "edit":
+                        if len(message.content[len(f"{p}tag edit "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                    userTags = file.read()
+                                if tagName in userTags or message.author.id == ownerID:
+                                    if len(message.content.split(" ")[3:]) > 0:
+                                        #This part allows you to use the edit command.
+                                        tagStr = " ".join(tagName)
+                                        fs.write(f"../{tagName}.txt", " ".join(message.content.split(" ")[3:]))
+                                        await channel.send(":white_check_mark: - Tag edited!")
+                                    else:
+                                        await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
+                                else:
+                                    await channel.send(":interrobang: - You do not own this tag!")
+                        else:
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "delete":
+                        if len(message.content[len(f"{p}tag delete "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                    userTags = file.read()
+                                if tagName in userTags or message.author.id == ownerID:
+                                    #The actual process of deleting the tag.
+                                    os.remove(f"../{tagName}.txt")
+                                    userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
+                                    fs.write(f"../tags_by_{message.author.id}.txt", userTags)
+                                    await channel.send(":white_check_mark: - Tag deleted!")
+                                else:
+                                    await channel.send(":interrobang: - You do not own this tag or lack the permission ``administrator``!")
                             else:
-                                await channel.send(":exclamation: - The tag name you chose is banned for usage by the bot!")
+                                await channel.send(":interrobang: - Tag not found!")
                         else:
-                            await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
-                elif actionToDoRaw == "edit":
-                    tagName = message.content.split(" ")[2]
-                    if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                        with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                            userTags = file.read()
-                        if tagName in userTags or message.author.id == ownerID:
-                            if len(message.content.split(" ")[3:]) > 0:
-                                #This part allows you to use the edit command.
-                                tagStr = " ".join(tagName)
-                                fs.write(f"../{tagName}.txt", " ".join(message.content.split(" ")[3:]))
-                                await channel.send(":white_check_mark: - Tag edited!")
-                            else:
-                                await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "mytags":
+                        if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                            #What can I say, shows you your tags.
+                            with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                userTags = file.read()
+                            await channel.send(f"<@{message.author.id}> , your tags are:\n\n``{userTags}``")
                         else:
-                            await channel.send(":interrobang: - You do not own this tag!")
-                elif actionToDoRaw == "delete":
-                    tagName = message.content.split(" ")[2]
-                    if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                        with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                            userTags = file.read()
-                        if tagName in userTags or message.author.id == ownerID:
-                            #The actual process of deleting the tag.
-                            os.remove(f"../{tagName}.txt")
-                            userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
-                            fs.write(f"../tags_by_{message.author.id}.txt", userTags)
-                            await channel.send(":white_check_mark: - Tag deleted!")
-                        else:
-                            await channel.send(":interrobang: - You do not own this tag or lack the permission ``administrator``!")
+                            await channel.send(":interrobang: - You don't seem to own any tags!")
                     else:
-                        await channel.send(":interrobang: - Tag not found!")
-                elif actionToDoRaw == "mytags":
-                    if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                        #What can I say, shows you your tags.
-                        with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                            userTags = file.read()
-                        await channel.send(f"<@{message.author.id}> , your tags are:\n\n``{userTags}``")
-                    else:
-                        await channel.send(":interrobang: - You don't seem to own any tags!")
+                        #This fancy part loads tags up as if they're nothing.
+                        tagName = message.content.split(" ")[1]
+                        if fs.exists(f"../{tagName}.txt"):
+                            with open(f"../{tagName}.txt", "r") as file:
+                                tagContent = file.read()
+                            await channel.send(tagContent)
+                        else:
+                            await channel.send(":interrobang: - Invalid tag!")
                 else:
-                    #This fancy part loads tags up as if they're nothing.
-                    tagName = message.content.split(" ")[1]
-                    if fs.exists(f"../{tagName}.txt"):
-                        with open(f"../{tagName}.txt", "r") as file:
-                            tagContent = file.read()
-                        await channel.send(tagContent)
-                    else:
-                        await channel.send(":interrobang: - Invalid option or tag!")
+                    await channel.send(":interrobang: - Invalid tag or option!")
 
             #Enable/Disable Curse Filter
             if message.content.startswith(f"{p}cursefil"):
