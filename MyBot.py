@@ -758,7 +758,7 @@ class MyClient(discord.Client):
                             os.remove(f"../bye_msg_of_{message.guild.id}.txt")
                         if fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
                             os.remove(f"../bye_ch_of_{message.guild.id}.txt")
-                        await channel.send(":exclamation: - Deleted all welcome settings for this server!")
+                        await channel.send(":exclamation: - Deleted all leave settings for this server!")
                 else:
                     await channel.send(":interrobang: - You don't have permission to do this!")
 
