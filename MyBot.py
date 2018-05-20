@@ -65,6 +65,8 @@ class MyClient(discord.Client):
                     msg = msg.replace("{MENTION}", f"<@{member.id}>")
                 if "{SRVNAME}" in msg:
                     msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
+                if "{USERCOUNT}" in msg:
+                    msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
                 await channel.send(msg)
 
     async def on_member_remove(self, member):
@@ -82,6 +84,8 @@ class MyClient(discord.Client):
                     msg = msg.replace("{USERID}", f"{member.id}")
                 if "{SRVNAME}" in msg:
                     msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
+                if "{USERCOUNT}" in msg:
+                    msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
                 await channel.send(msg)
 
     async def on_message(self, message):
@@ -716,7 +720,7 @@ class MyClient(discord.Client):
             #Set Welcome Command
             if message.content.startswith(f"{p}setwelcome"):
                 #Oh God, the simplest concepts require the best coding skills. Have fun with this.
-                if message.author.guild_permissions.administrator:
+                if message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.channel_mentions) > 0:
                         if len(message.content.split()[2:]) > 0:
                             if not fs.exists(f"../welc_ch_of_{message.guild.id}.txt"):
@@ -740,7 +744,7 @@ class MyClient(discord.Client):
 
             #Set Leave Command
             if message.content.startswith(f"{p}setleave"):
-                if message.author.guild_permissions.administrator:
+                if message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.channel_mentions) > 0:
                         if len(message.content.split()[2:]) > 0:
                             if not fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
@@ -850,7 +854,7 @@ class MyClient(discord.Client):
 
             #Welcome/Leave Help Command
             if message.content == f"{p}help +welcome":
-                await channel.send("This bot supports a welcome and leave feature that welcomes everyone new into the server, or sends his regards to someone leaving! To enable it, use the following commands:\n\n``DD!setwelcome <channel> <message>`` and ``DD!setleave <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member. **This option does not work for the leave version!**\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
+                await channel.send("This bot supports a welcome and leave feature that welcomes everyone new into the server, or sends his regards to someone leaving! To enable it, use the following commands:\n\n``DD!setwelcome <channel> <message>`` and ``DD!setleave <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member. **This option does not work for the leave version!**\n{SRVNAME} - The server's name.\n{USERCOUNT} - The server's user count.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
                 await channel.send("Also, don't use emojis! The bot's emoji decryptor will handle them wrong and paste them as weird code. Rather use default chat faces, for example: ``:)``, ``:(``, ``8P`` etc.")
 
             #Everyone Help Command
