@@ -398,7 +398,7 @@ class MyClient(discord.Client):
                     else:
                         if not fs.exists(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt"):
                             fs.write(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", "0")
-                        with open('../warns_of_{}.txt'.format(message.author.id), 'r+') as file:
+                        with open(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", "r+") as file:
                             warn = int(file.read())
                         if warn < 3:
                             warn += 1
