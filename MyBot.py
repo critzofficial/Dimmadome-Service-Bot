@@ -52,23 +52,27 @@ class MyClient(discord.Client):
         #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
         if fs.exists(f"../welc_ch_of_{member.guild.id}.txt"):
             if fs.exists(f"../welc_msg_of_{member.guild.id}.txt"):
-                with open(f"../welc_ch_of_{member.guild.id}.txt") as file1:
-                    chID = file1.read()
-                channel = client.get_channel(int(chID))
-                with open(f"../welc_msg_of_{member.guild.id}.txt") as file2:
-                    msg = file2.read()
-                if "{USERNAME}" in msg:
-                    msg = msg.replace("{USERNAME}", f"{member.name}")
-                if "{USERID}" in msg:
-                    msg = msg.replace("{USERID}", f"{member.id}")
-                if "{MENTION}" in msg:
-                    msg = msg.replace("{MENTION}", f"<@{member.id}>")
-                if "{SRVNAME}" in msg:
-                    msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
-                if "{USERCOUNT}" in msg:
-                    memCnt = len(member.guild.members)
-                    msg = msg.replace("{USERCOUNT}", f"{memCnt}")
-                await channel.send(msg)
+                try:
+                    with open(f"../welc_ch_of_{member.guild.id}.txt") as file1:
+                        chID = file1.read()
+                    channel = client.get_channel(int(chID))
+                    with open(f"../welc_msg_of_{member.guild.id}.txt") as file2:
+                        msg = file2.read()
+                    if "{USERNAME}" in msg:
+                        msg = msg.replace("{USERNAME}", f"{member.name}")
+                    if "{USERID}" in msg:
+                        msg = msg.replace("{USERID}", f"{member.id}")
+                    if "{MENTION}" in msg:
+                        msg = msg.replace("{MENTION}", f"<@{member.id}>")
+                    if "{SRVNAME}" in msg:
+                        msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
+                    if "{USERCOUNT}" in msg:
+                        memCnt = len(member.guild.members)
+                        msg = msg.replace("{USERCOUNT}", f"{memCnt}")
+                    await channel.send(msg)
+                except Exception as e:
+                    srvOwner = client.get_member(member.guild.owner_id)
+                    srvOwner.send(f":exclamation: - Oops, it seems like I failed greeting {member.name} ! Please check the error below.\n``{e}: {e.__class__.__name__}``")
 
     async def on_member_remove(self, member):
         #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
