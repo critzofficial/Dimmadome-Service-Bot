@@ -9,9 +9,9 @@ import asyncio
 import fs
 from datetime import datetime
 import os
-from samp_client.client import SampClient
-with SampClient(address='23.94.75.34', port=7847) as client:
-    srvinfo = client.get_server_info()
+#from samp_client.client import SampClient
+#with SampClient(address='23.94.75.34', port="7847") as client:
+#    srvinfo = client.get_server_info()
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 ownerID = 255802794244571136
@@ -66,7 +66,8 @@ class MyClient(discord.Client):
                 if "{SRVNAME}" in msg:
                     msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
                 if "{USERCOUNT}" in msg:
-                    msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
+                    memCnt = len(member.guild.members)
+                    msg = msg.replace("{USERCOUNT}", f"{memCnt}")
                 await channel.send(msg)
 
     async def on_member_remove(self, member):
@@ -228,12 +229,12 @@ class MyClient(discord.Client):
                 await channel.send("I'm dimmadone with all these haters.", file=dab)
 
             #Special SAMP Command
-            if message.content == f"{p}server":
+            #if message.content == f"{p}server":
                 #A special command. If you don't want this to be in your server, then you could ask me to blacklist it for this command.
-                embed_server_color = 0xff8000
-                vAAssassins = client.get_guild(424073177329565696)
-                embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
-                await channel.send(embed=embed_server)
+            #    embed_server_color = 0xff8000
+            #    vAAssassins = client.get_guild(424073177329565696)
+            #    embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
+            #    await channel.send(embed=embed_server)
 
             #Time Command
             if message.content == f"{p}time":
@@ -784,6 +785,8 @@ class MyClient(discord.Client):
                                 msg = msg.replace("{MENTION}", f"<@{message.author.id}>")
                             if "{SRVNAME}" in msg:
                                 msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
+                            if "{USERCOUNT}" in msg:
+                                msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
                             await welcCh.send(msg)
                         else:
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
@@ -808,6 +811,8 @@ class MyClient(discord.Client):
                                 msg = msg.replace("{USERID}", f"{message.author.id}")
                             if "{SRVNAME}" in msg:
                                 msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
+                            if "{USERCOUNT}" in msg:
+                                msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
                             await byeCh.send(msg)
                         else:
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
