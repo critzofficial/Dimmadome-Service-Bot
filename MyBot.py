@@ -786,7 +786,7 @@ class MyClient(discord.Client):
                             if "{SRVNAME}" in msg:
                                 msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
                             if "{USERCOUNT}" in msg:
-                                msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
+                                msg = msg.replace("{USERCOUNT}", f"{len(message.guild.members)}")
                             await welcCh.send(msg)
                         else:
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
@@ -812,7 +812,7 @@ class MyClient(discord.Client):
                             if "{SRVNAME}" in msg:
                                 msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
                             if "{USERCOUNT}" in msg:
-                                msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
+                                msg = msg.replace("{USERCOUNT}", f"{len(message.guild.members)}")
                             await byeCh.send(msg)
                         else:
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
