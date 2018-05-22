@@ -510,65 +510,77 @@ class MyClient(discord.Client):
             #Kick Command
             if message.content.startswith(f"{p}kick"):
                 if message.author.guild_permissions.administrator or message.author.guild_permissions.kick_members or message.author.id == ownerID:
-                    memberToKick = message.mentions[0]
-                    if len(message.content.split(" ")[2:]) > 0:
-                        kick_reason = message.content.split(" ")[2:]
+                    if self.user.guild_permissions.kick_members:
+                        memberToKick = message.mentions[0]
+                        if len(message.content.split(" ")[2:]) > 0:
+                            kick_reason = message.content.split(" ")[2:]
+                        else:
+                            kick_reason = "No reason provided."
+                        await memberToKick.kick(reason=f"Performed by {message.author.name} - " + " ".join(kick_reason))
+                        await channel.send(embed=discord.Embed(title="User Kick", description=f"{memberToKick.name} successfully kicked!", color=0xFFFF00))
+                        kick_embed_color = 0xFFFF00
+                        kick_embed = discord.Embed(title="Admin Log: Member Kick", description=f"A kick has been issued in {message.channel.name}", colour=kick_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Kicked Member", value=f"{memberToKick.name}").add_field(name="Reason", value=" ".join(kick_reason))
+                        await log_channel.send(embed=kick_embed)
+                        await message.delete()
                     else:
-                        kick_reason = "No reason provided."
-                    await memberToKick.kick(reason=f"Performed by {message.author.name} - " + " ".join(kick_reason))
-                    await channel.send(embed=discord.Embed(title="User Kick", description=f"{memberToKick.name} successfully kicked!", color=0xFFFF00))
-                    kick_embed_color = 0xFFFF00
-                    kick_embed = discord.Embed(title="Admin Log: Member Kick", description=f"A kick has been issued in {message.channel.name}", colour=kick_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Kicked Member", value=f"{memberToKick.name}").add_field(name="Reason", value=" ".join(kick_reason))
-                    await log_channel.send(embed=kick_embed)
-                    await message.delete()
+                        await channel.send(":exclamation: - Oops, I don't have the permission to kick members!")
                 else:
-                    await channel.send("You do not have permission to execute this command!")
+                    await channel.send(":interrobang: - You do not have permission to execute this command!")
 
             #Ban Command
             if message.content.startswith(f"{p}ban"):
                 if message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID:
-                    memberToBan = message.mentions[0]
-                    if len(message.content.split(" ")[2:]) > 0:
-                        ban_reason = message.content.split(" ")[2:]
+                    if self.user.guild_permissions.ban_members:
+                        memberToBan = message.mentions[0]
+                        if len(message.content.split(" ")[2:]) > 0:
+                            ban_reason = message.content.split(" ")[2:]
+                        else:
+                            ban_reason = "No reason provided."
+                        await memberToBan.ban(reason=f"Performed by {message.author.name} - " + " ".join(ban_reason))
+                        await channel.send(embed=discord.Embed(title="User Ban", description=f"{memberToBan.name} successfully banned!", color=0xFF0000))
+                        ban_embed_color = 0xFF0000
+                        ban_embed = discord.Embed(title="Admin Log: Member Ban", description=f"A ban has been issued on {message.channel.name}", colour=ban_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Banned Member", value=f"{memberToBan.name}").add_field(name="Reason", value=" ".join(ban_reason))
+                        await log_channel.send(embed=ban_embed)
+                        await message.delete()
                     else:
-                        ban_reason = "No reason provided."
-                    await memberToBan.ban(reason=f"Performed by {message.author.name} - " + " ".join(ban_reason))
-                    await channel.send(embed=discord.Embed(title="User Ban", description=f"{memberToBan.name} successfully banned!", color=0xFF0000))
-                    ban_embed_color = 0xFF0000
-                    ban_embed = discord.Embed(title="Admin Log: Member Ban", description=f"A ban has been issued on {message.channel.name}", colour=ban_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Banned Member", value=f"{memberToBan.name}").add_field(name="Reason", value=" ".join(ban_reason))
-                    await log_channel.send(embed=ban_embed)
-                    await message.delete()
+                        await channel.send(":exclamation: - Oops, I don't have the permission to ban members!")
                 else:
-                    await channel.send("You do not have permission to execute this command!")
+                    await channel.send(":interrobang: - You do not have permission to execute this command!")
 
             #Unban Command
-            if message.content.startswith(f"{p}unban") and (
-                    message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID):
-                await message.delete()
-                if len(message.content.split()[1]) == 0:
-                    await channel.send("Hey, make sure to use the ID of the banned user! Use ``pirabot-blist`` to see who you'd like to unban.")
-                else:
-                    try:
-                        memberToUnban = await client.get_user_info(user_id=message.content.split()[1])
-                        if len(message.content.split(" ")[2:]) > 0:
-                            unban_reason = message.content.split(" ")[2:]
+            if message.content.startswith(f"{p}unban"):
+                if message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID:
+                    if self.user.guild_permissions.ban_members:
+                        await message.delete()
+                        if len(message.content.split()[1]) == 0:
+                            await channel.send("Hey, make sure to use the ID of the banned user! Use ``pirabot-blist`` to see who you'd like to unban.")
                         else:
-                            unban_reason = "No reason provided."
-                        await message.guild.unban(user=memberToUnban, reason=" ".join(unbanReason))
-                        await channel.send(embed=discord.Embed(title="User Unban", description=f"{memberToUnban} successfully unbanned!", color=0x00FF00))
-                        embed_unban_color = 0x00FF00
-                        embed_unban = discord.Embed(title="Admin Log: Member Unban", description=f"An unban has been issued on the user {memberToUnban}", colour=embed_unban_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Unbanned User", value=f"{memberToUnban}").add_field(name="Reason", value=" ".join(unban_reason))
-                        await log_channel.send(embed=embed_unban)
-                    except Exception as e:
-                        await channel.send(f"Are you sure your ID is correct? The input threw a ``{e.__class__.__name__}``!\nStatistics for nerds: ``{e.__class__.__name__}: {e}``")
+                            try:
+                                memberToUnban = await client.get_user_info(user_id=message.content.split()[1])
+                                if len(message.content.split(" ")[2:]) > 0:
+                                    unban_reason = message.content.split(" ")[2:]
+                                else:
+                                    unban_reason = "No reason provided."
+                                await message.guild.unban(user=memberToUnban, reason=" ".join(unbanReason))
+                                await channel.send(embed=discord.Embed(title="User Unban", description=f"{memberToUnban} successfully unbanned!", color=0x00FF00))
+                                embed_unban_color = 0x00FF00
+                                embed_unban = discord.Embed(title="Admin Log: Member Unban", description=f"An unban has been issued on the user {memberToUnban}", colour=embed_unban_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Unbanned User", value=f"{memberToUnban}").add_field(name="Reason", value=" ".join(unban_reason))
+                                await log_channel.send(embed=embed_unban)
+                            except Exception as e:
+                                await channel.send(f"Are you sure your ID is correct? The input threw a ``{e.__class__.__name__}``!\nStatistics for nerds: ``{e.__class__.__name__}: {e}``")
+                    else:
+                        await channel.send(":exclamation: - Oops, I don't have the permission to unban members!")
+                else:
+                    await channel.send(":interrobang: - You do not have permission to execute this command!")
 
             #Ban List Command
             if message.content == f"{p}blist":
                 if message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID:
-                    if len(await message.guild.bans()) != 0:
-                        await channel.send("\n".join([":hammer: Name: {.user.name} ID: {.user.id} Reason: {.reason}".format(entry, entry, entry) for entry in await message.guild.bans()]))
-                    else:
-                        await channel.send(":interrobang: - No one is banned!")
+                    if self.user.guild_permissions.ban_members:
+                        if len(await message.guild.bans()) != 0:
+                            await channel.send("\n".join([":hammer: Name: {.user.name} ID: {.user.id} Reason: {.reason}".format(entry, entry, entry) for entry in await message.guild.bans()]))
+                        else:
+                            await channel.send(":interrobang: - No one is banned!")
 
             #Log Test Command
             if message.content == f"{p}testlog":
