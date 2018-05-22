@@ -10,9 +10,9 @@ import asyncio
 import fs
 from datetime import datetime
 import os
-from samp_client.client import SampClient
-with SampClient(address='23.94.75.34', port=7847) as client:
-    srvinfo = client.get_server_info()
+# from samp_client.client import SampClient
+# with SampClient(address='23.94.75.34', port=7847) as client:
+#     srvinfo = client.get_server_info()
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 logging.basicConfig(level=logging.ERROR)
@@ -149,11 +149,12 @@ class MyClient(discord.Client):
                 await channel.send("I'm dimmadone with all these haters.", file=dab)
 
             #Special SAMP Command
-            if message.content == f"{p}server":
-                embed_server_color = 0xff8000
-                vAAssassins = client.get_guild(424073177329565696)
-                embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
-                await channel.send(embed=embed_server)
+            #This command and the imports connected to it are disabled to fix the script, the bot keeps throwing errors.
+            # if message.content == f"{p}server":
+            #     embed_server_color = 0xff8000
+            #     vAAssassins = client.get_guild(424073177329565696)
+            #     embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
+            #     await channel.send(embed=embed_server)
 
             #Time Command
             if message.content == f"{p}time":
