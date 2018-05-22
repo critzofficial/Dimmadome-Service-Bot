@@ -107,6 +107,91 @@ class MyClient(discord.Client):
                 embed_about.add_field(name="Number of members I serve in total (not including DiscordBots)", value=numOfMembers - numOfMembersToReduce, inline=False)
                 await channel.send(embed=embed_about)
 
+            #Tag Command
+            if message.content.startswith(f"{p}tag"):
+                if len(message.content[len(f"{p}tag "):]) > 0:
+                    actionToDoList = message.content.split(" ")[1]
+                    actionToDoRaw = "".join(actionToDoList)
+                    if actionToDoRaw == "create":
+                        if len(message.content[len(f"{p}tag create "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            tagStr = "".join(tagName)
+                            if fs.exists(f"../{tagStr}.txt"):
+                                await channel.send(":interrobang: - The tag name is already occupied!")
+                            else:
+                                #Creates the tag and content associated to it, and records it into the player's ID secretly.
+                                if len(message.content.split(" ")[3:]) > 0:
+                                    bannedTags = ["create", "delete", "edit", "mytags"]
+                                    if tagName not in bannedTags:
+                                        tagStr = "".join(tagName)
+                                        fs.write(f"../{tagStr}.txt", " ".join(message.content.split(" ")[3:]))
+                                        if not fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                            fs.write(f"../tags_by_{message.author.id}.txt", "".join(tagName))
+                                        else:
+                                            fs.append(f"../tags_by_{message.author.id}.txt", f"\n{tagStr}")
+                                        await channel.send(":white_check_mark: - Tag created!")
+                                    else:
+                                        await channel.send(":exclamation: - The tag name you chose is banned for usage by the bot!")
+                                else:
+                                    await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
+                        else:
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "edit":
+                        if len(message.content[len(f"{p}tag edit "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                    userTags = file.read()
+                                if tagName in userTags or message.author.id == ownerID:
+                                    if len(message.content.split(" ")[3:]) > 0:
+                                        #This part allows you to use the edit command.
+                                        #tagStr = " ".join(tagName)
+                                        fs.write(f"../{tagName}.txt", " ".join(message.content.split(" ")[3:]))
+                                        await channel.send(":white_check_mark: - Tag edited!")
+                                    else:
+                                        await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
+                                else:
+                                    await channel.send(":interrobang: - You do not own this tag!")
+                        else:
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "delete":
+                        if len(message.content[len(f"{p}tag delete "):]) > 0:
+                            tagName = message.content.split(" ")[2]
+                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                    userTags = file.read()
+                                if tagName in userTags or message.author.id == ownerID:
+                                    #The actual process of deleting the tag.
+                                    os.remove(f"../{tagName}.txt")
+                                    userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
+                                    fs.write(f"../tags_by_{message.author.id}.txt", userTags)
+                                    await channel.send(":white_check_mark: - Tag deleted!")
+                                else:
+                                    await channel.send(":interrobang: - You do not own this tag or lack the permission ``administrator``!")
+                            else:
+                                await channel.send(":interrobang: - Tag not found!")
+                        else:
+                            await channel.send(":interrobang: - No tag name specified!")
+                    elif actionToDoRaw == "mytags":
+                        if fs.exists(f"../tags_by_{message.author.id}.txt"):
+                            #What can I say, shows you your tags.
+                            with open(f"../tags_by_{message.author.id}.txt", "r") as file:
+                                userTags = file.read()
+                            await channel.send(f"<@{message.author.id}> , your tags are:\n\n``{userTags}``")
+                        else:
+                            await channel.send(":interrobang: - You don't seem to own any tags!")
+                    else:
+                        #This fancy part loads tags up as if they're nothing.
+                        tagName = message.content.split(" ")[1]
+                        if fs.exists(f"../{tagName}.txt"):
+                            with open(f"../{tagName}.txt", "r") as file:
+                                tagContent = file.read()
+                            await channel.send(tagContent)
+                        else:
+                            await channel.send(":interrobang: - Invalid tag!")
+                else:
+                    await channel.send(":interrobang: - Invalid tag or option!")
+
             #Rules Command
             #This one is undocumented inside of the help command, because it's for special use of the Support server.
             if message.content == f"{p}rules":
@@ -424,7 +509,7 @@ class MyClient(discord.Client):
                         if len(message.mentions) > 0:
                             intendedMember = message.mentions[0]
                         else:
-                            intendedMember = message.guild.get_member(int(message.content.split()[1:]))
+                            intendedMember = message.guild.get_member(int("".join(message.content.split()[1:])))
                     else:
                         intendedMember = message.author
                     roles = intendedMember.roles
@@ -695,7 +780,7 @@ class MyClient(discord.Client):
                 embed_help_colour = 0xFF00FF
                 embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="about", value="Basic/advanced information about the bot!").add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
                 await channel.send(embed=embed_help)
-                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
+                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
 
             if message.content == f"{p}help +welcome":
                 await channel.send("This bot supports a welcome feature that welcomes everyone new into the server! To enable it, use the following command:\n\n``DD!setwelcome <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member.\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
@@ -721,6 +806,16 @@ class MyClient(discord.Client):
                 embed_help_admin.add_field(name="testwelcome", value="Tests the welcome message. The info required for the user fields will always be gathered from the author.\nRequired permissions: ``administrator``")
                 embed_help_admin.add_field(name="cursefil <0/1>", value="Enables/disables the curse filter for the server. Default is at ``0``. ``0`` - Disabled; ``1`` - Enabled.\nRequired permissions: ``administrator``")
                 await channel.send(embed=embed_help_admin)
+
+            #Tags Help Command
+            if message.content == f"{p}help +tags":
+                embed_help_tags = discord.Embed(title=f"Tag Commands - {p}tags", description="The tags are a flexible way of making your own text inside of the bot. Please notice that they are not perfect. Contact the owner if anything isn't as it should be!", color=0x00FF00)
+                embed_help_tags.add_field(name="create <name> <value>", value="Create your own tags! Please notice that the tags can't handle any kind of file uploads. If you want to insert a file, make it be a direct link!")
+                embed_help_tags.add_field(name="edit <name> <new value>", value="Edit your own tags! Made a typo? Don't worry. This command will save you.\n**ADMIN NOTICE** - If an inappropriate tag has been located, please contact the bot owner! He will delete it.")
+                embed_help_tags.add_field(name="delete <name>", value="Deletes a tag! You MUST be the creator of the tag(s) you want to delete. If an inappropriate tag is created, contact the bot owner!")
+                embed_help_tags.add_field(name="mytags", value="Check which tags you own!\n**PLEASE NOTICE** - The bot is not compatible to mark a tag as 'deleted' if the bot owner removes it on admin request. If you can't seem to open your tag, it most likely means that it's been deleted by the bot owner.")
+                embed_help_tags.add_field(name="Loading tags... *insert Windows XP loading sound*", value="If you want to simply load the tags, then type the name in and you're good to go!")
+                await channel.send(embed=embed_help_tags)
 
             #Good Bot
             if message.content == "good bot!":
