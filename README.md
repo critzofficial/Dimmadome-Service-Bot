@@ -1,14 +1,21 @@
-Hello, welcome to my GitHub repository! Inside of this little README file, I will explain the concept of my bot, Dimmadome Service Bot.
+Hello there! Welcome to **Dimmadome Service Bot**'s GitHub repository! Inside of this little ReadMe file, I will be explaining a few facts considering the bot and me, the creator.
 
-So, my bot is made rather as a funny little tool, but appeared to have a bit more success than anticipated! The bot has managed his own entry inside of the DiscordBots webpage ( https://discordbots.org/bot/269533424916627457 ) and is running on multiple private/tiny servers without problems.
+Firstly, I want to say that you should look at the commands *before* inviting my bot. Some commands might not be how you want them to be. Even if it's a tiny thing, I respect it and leave it fully up to you to invite the bot...or not.
 
-As I may think of it, you're either here because you want to simply look over the souce code, take a bit for yourself or try to crack my bot's token.
+Now, about the permissions my bot (currently) needs:
 
-Firstly, no. You can't crack the token. It's safely ignored by GitHub and there is no way you will be able to reach it.
+**Manage Roles** - The bot has an automatic feature where it tries to add the *DSB Muted* role, in order to make the mute/unmute commands work as expected. If you choose to NOT give the bot this permission, the mute commands will be not working, unless you reinvite the bot or add the role yourself.
 
-If you want to take a part of my code and use it for yourself, please notice that my bot is NOT written in the "commands" module of R. Danny's Discord.py extension. I use the pure rewrite version, which is more difficult for you maybe, but easier for me. If you want to make commands that my bot uses, please don't try and copy them. For your own safety.
+**Kick/Ban Members** - The bot also is in power of kicking or banning users in various ways. Many of them are based off of filters, but there are direct kick and ban commands at hand too. Simply use *DD!kick* or *DD!ban* to make the job easier. If the bot lacks the permissions to do so, it will be aborted.
 
-If you're here to see the code in general, then I won't stop you. Have a good look at it! If you have any suggestions, feel free to use the * DD!suggest * command, join my support server or directly contact me if we happen to share a server!
+**Send/Manage Messages** - Some commands instantly delete the user's message once a special command is recognized. This is mostly used for owner/admin commands. Please make sure to check this. It will do no harm. Disabling this will also render the *DD!purge* command useless.
 
-Good day,
-Doug Dimmadome
+***About the bot***
+
+The bot was made at first to be a fun little script for private servers of my friends, but has managed to climb the ladder to an official bot...more or less. The bot is capable of many commands that are expected to be stable. In case of instability, it is recommended to refrain from using the command and contacting me. I will fix it!
+
+***About me***
+
+About me, there is nothing much to say. Your everyday Discord user, just with a few coding "gods" to ask anything as well as some coding knowledge myself.
+
+If you want to invite the bot, please use this link provided ( https://discordbots.org/bot/269533424916627457 ) to look at it's prefix, vote for it and finally add it into your own server. Good day!

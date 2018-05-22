@@ -1,6 +1,7 @@
 # coding=utf-8
 #from typing import List
 
+import logging
 import discord
 import sys
 import random
@@ -9,25 +10,24 @@ import asyncio
 import fs
 from datetime import datetime
 import os
-#from samp_client.client import SampClient
-#with SampClient(address='23.94.75.34', port="7847") as client:
-#    srvinfo = client.get_server_info()
+from samp_client.client import SampClient
+with SampClient(address='23.94.75.34', port=7847) as client:
+    srvinfo = client.get_server_info()
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+
+logging.basicConfig(level=logging.ERROR)
 
 ownerID = 255802794244571136
 botID = 269533424916627457
 Robben = 351077471241764876
 
 p = "DD!"
-#[-----]
-#N-word warning! This is for the curse filter.
-#[-----]
+
 curse_list = ["fuck", "shit", "crap", "bitch", "nigga", "nigger", "fak", "shet", "sht", "fck"]
 
 
 class MyClient(discord.Client):
     async def on_connect(self):
-        #Launches whenever the bot is connecting, but the script is not ready yet.
         print("Connecting...\n")
         game_name = "Connecting, please wait!"
         prebot_game = discord.Game(name=str(game_name))
@@ -35,8 +35,9 @@ class MyClient(discord.Client):
         await client.change_presence(activity=prebot_game, status=prebot_status)
 
     async def on_ready(self):
-        #Launches whenever the bot is fully ready.
         print(f"Script loaded and ready to be used!\nName: {self.user}\nID: {self.user.id}\nDiscriminator: {self.user.discriminator}\n\nCurrently running on - {len(self.guilds)} - servers!\n")
+        #for guild in self.guilds:
+        #    print(f"Guild name: {guild.name} | Guild ID: {guild.id}")
         #game_name = "Bot under development"
         game_name = f"| {p}help |"
         bot_game = discord.Game(name=str(game_name))
@@ -45,59 +46,30 @@ class MyClient(discord.Client):
         await client.change_presence(activity=bot_game, status=bot_status)
 
     async def on_guild_join(self, guild):
-        #Launches whenever the bot joins a new guild. Used for the mute command.
         await guild.create_role(name="DSB Muted", permissions=discord.Permissions(permissions=66560), color=discord.Colour(value=0xFF0000), hoist=False, mentionable=False)
 
     async def on_member_join(self, member):
-        #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
-        if fs.exists(f"../welc_ch_of_{member.guild.id}.txt"):
-            if fs.exists(f"../welc_msg_of_{member.guild.id}.txt"):
-                try:
-                    with open(f"../welc_ch_of_{member.guild.id}.txt") as file1:
-                        chID = file1.read()
-                    channel = client.get_channel(int(chID))
-                    with open(f"../welc_msg_of_{member.guild.id}.txt") as file2:
-                        msg = file2.read()
-                    if "{USERNAME}" in msg:
-                        msg = msg.replace("{USERNAME}", f"{member.name}")
-                    if "{USERID}" in msg:
-                        msg = msg.replace("{USERID}", f"{member.id}")
-                    if "{MENTION}" in msg:
-                        msg = msg.replace("{MENTION}", f"<@{member.id}>")
-                    if "{SRVNAME}" in msg:
-                        msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
-                    if "{USERCOUNT}" in msg:
-                        memCnt = len(member.guild.members)
-                        msg = msg.replace("{USERCOUNT}", f"{memCnt}")
-                    await channel.send(msg)
-                except Exception as e:
-                    srvOwner = client.get_member(member.guild.owner_id)
-                    srvOwner.send(f":exclamation: - Oops, it seems like I failed greeting {member.name} ! Please check the error below.\n``{e}: {e.__class__.__name__}``")
-
-    async def on_member_remove(self, member):
-        #Welcomes any new members into the server. The channel and message have to be defined using the setwelcome command.
-        if fs.exists(f"../bye_ch_of_{member.guild.id}.txt"):
-            if fs.exists(f"../bye_msg_of_{member.guild.id}.txt"):
-                with open(f"../bye_ch_of_{member.guild.id}.txt") as file1:
+        if fs.exists(f"welc_ch_of_{member.guild.id}.txt"):
+            if fs.exists(f"welc_msg_of_{member.guild.id}.txt"):
+                with open(f"welc_ch_of_{member.guild.id}.txt") as file1:
                     chID = file1.read()
                 channel = client.get_channel(int(chID))
-                with open(f"../bye_msg_of_{member.guild.id}.txt") as file2:
+                with open(f"welc_msg_of_{member.guild.id}.txt") as file2:
                     msg = file2.read()
                 if "{USERNAME}" in msg:
                     msg = msg.replace("{USERNAME}", f"{member.name}")
                 if "{USERID}" in msg:
                     msg = msg.replace("{USERID}", f"{member.id}")
+                if "{MENTION}" in msg:
+                    msg = msg.replace("{MENTION}", f"<@{member.id}>")
                 if "{SRVNAME}" in msg:
                     msg = msg.replace("{SRVNAME}", f"{member.guild.name}")
-                if "{USERCOUNT}" in msg:
-                    msg = msg.replace("{USERCOUNT}", f"{len(member.guild.members)}")
                 await channel.send(msg)
 
     async def on_message(self, message):
         global memActivity, log_channel
         channel = message.channel
 
-        #Speaks for itself, checks if the message is sent by a bot. If not, it will check if it's a command.
         if not message.author.bot:
 
             #Log Check
@@ -110,8 +82,8 @@ class MyClient(discord.Client):
 
             #Curse Check
             if any(x in curse_list for x in message.content.split(" ")):
-                if fs.exists(f"../cfil_of_{message.guild.id}.txt"):
-                    with open(f"../cfil_of_{message.guild.id}.txt", "r+") as file:
+                if fs.exists(f"cfil_of_{message.guild.id}.txt"):
+                    with open(f"cfil_of_{message.guild.id}.txt", "r+") as file:
                         cfilsetting = int(file.read())
                     if cfilsetting == 1:
                         await message.delete()
@@ -119,99 +91,43 @@ class MyClient(discord.Client):
                     else:
                         pass
 
-            #Tag Command
-            if message.content.startswith(f"{p}tag"):
-                if len(message.content[len(f"{p}tag "):]) > 0:
-                    actionToDoList = message.content.split(" ")[1]
-                    actionToDoRaw = "".join(actionToDoList)
-                    if actionToDoRaw == "create":
-                        if len(message.content[len(f"{p}tag create "):]) > 0:
-                            tagName = message.content.split(" ")[2]
-                            tagStr = "".join(tagName)
-                            if fs.exists(f"../{tagStr}.txt"):
-                                await channel.send(":interrobang: - The tag name is already occupied!")
-                            else:
-                                #Creates the tag and content associated to it, and records it into the player's ID secretly.
-                                if len(message.content.split(" ")[3:]) > 0:
-                                    bannedTags = ["create", "delete", "edit", "mytags"]
-                                    if tagName not in bannedTags:
-                                        tagStr = "".join(tagName)
-                                        fs.write(f"../{tagStr}.txt", " ".join(message.content.split(" ")[3:]))
-                                        if not fs.exists(f"../tags_by_{message.author.id}.txt"):
-                                            fs.write(f"../tags_by_{message.author.id}.txt", "".join(tagName))
-                                        else:
-                                            fs.append(f"../tags_by_{message.author.id}.txt", f"\n{tagStr}")
-                                        await channel.send(":white_check_mark: - Tag created!")
-                                    else:
-                                        await channel.send(":exclamation: - The tag name you chose is banned for usage by the bot!")
-                                else:
-                                    await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
-                        else:
-                            await channel.send(":interrobang: - No tag name specified!")
-                    elif actionToDoRaw == "edit":
-                        if len(message.content[len(f"{p}tag edit "):]) > 0:
-                            tagName = message.content.split(" ")[2]
-                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                                    userTags = file.read()
-                                if tagName in userTags or message.author.id == ownerID:
-                                    if len(message.content.split(" ")[3:]) > 0:
-                                        #This part allows you to use the edit command.
-                                        tagStr = " ".join(tagName)
-                                        fs.write(f"../{tagName}.txt", " ".join(message.content.split(" ")[3:]))
-                                        await channel.send(":white_check_mark: - Tag edited!")
-                                    else:
-                                        await channel.send(":interrobang: - Input not found, did you specify what the tag should hold?")
-                                else:
-                                    await channel.send(":interrobang: - You do not own this tag!")
-                        else:
-                            await channel.send(":interrobang: - No tag name specified!")
-                    elif actionToDoRaw == "delete":
-                        if len(message.content[len(f"{p}tag delete "):]) > 0:
-                            tagName = message.content.split(" ")[2]
-                            if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                                with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                                    userTags = file.read()
-                                if tagName in userTags or message.author.id == ownerID:
-                                    #The actual process of deleting the tag.
-                                    os.remove(f"../{tagName}.txt")
-                                    userTags = userTags.replace(tagName, f"{tagName} *DELETED*")
-                                    fs.write(f"../tags_by_{message.author.id}.txt", userTags)
-                                    await channel.send(":white_check_mark: - Tag deleted!")
-                                else:
-                                    await channel.send(":interrobang: - You do not own this tag or lack the permission ``administrator``!")
-                            else:
-                                await channel.send(":interrobang: - Tag not found!")
-                        else:
-                            await channel.send(":interrobang: - No tag name specified!")
-                    elif actionToDoRaw == "mytags":
-                        if fs.exists(f"../tags_by_{message.author.id}.txt"):
-                            #What can I say, shows you your tags.
-                            with open(f"../tags_by_{message.author.id}.txt", "r") as file:
-                                userTags = file.read()
-                            await channel.send(f"<@{message.author.id}> , your tags are:\n\n``{userTags}``")
-                        else:
-                            await channel.send(":interrobang: - You don't seem to own any tags!")
-                    else:
-                        #This fancy part loads tags up as if they're nothing.
-                        tagName = message.content.split(" ")[1]
-                        if fs.exists(f"../{tagName}.txt"):
-                            with open(f"../{tagName}.txt", "r") as file:
-                                tagContent = file.read()
-                            await channel.send(tagContent)
-                        else:
-                            await channel.send(":interrobang: - Invalid tag!")
-                else:
-                    await channel.send(":interrobang: - Invalid tag or option!")
+            #About Command
+            if message.content == f"{p}about":
+                numOfMembers = 0
+                numOfMembersToReduce = len(client.get_guild(264445053596991498).members)
+                embed_about = discord.Embed(title="About", description=f"This embed will showcase all the information about {self.user}!", color=0x00FF00)
+                embed_about.add_field(name="Username", value=self.user, inline=False)
+                embed_about.add_field(name="ID", value=self.user.id, inline=False)
+                embed_about.add_field(name="Discriminator", value=self.user.discriminator, inline=False)
+                embed_about.add_field(name="Library Version", value=discord.__version__, inline=False)
+                embed_about.add_field(name="My Owner", value=await client.get_user_info(user_id=ownerID), inline=False)
+                embed_about.add_field(name="Number of servers I run in", value=len(client.guilds), inline=False)
+                for guild in client.guilds:
+                    numOfMembers += len(guild.members)
+                embed_about.add_field(name="Number of members I serve in total (not including DiscordBots)", value=numOfMembers - numOfMembersToReduce, inline=False)
+                await channel.send(embed=embed_about)
+
+            #Rules Command
+            #This one is undocumented inside of the help command, because it's for special use of the Support server.
+            if message.content == f"{p}rules":
+                if message.author.id == ownerID:
+                    await message.delete()
+                    embed_rules = discord.Embed(title="Rules of the DSB Support server.", description="Please note that these rules ONLY apply in the DSB Support server! Rules in other servers are not based off of these rules, or vice versa.", color=0x00FFFF)
+                    embed_rules.add_field(name="1) No excessive cursing/insulting", value="We understand that some people can have bad days and have to steam off somewhere, but this server is *NOT* made for that. If you are found by one of the admins to curse in an extreme ammount or are insulting other members (directly or indirectly), you will be punished. Punishments vary from a simple mute to a ban from the server. Watch your tongue!")
+                    embed_rules.add_field(name="2) No racism", value="Even as a joke, any kind of racist acts are strictly prohobited and will be punished with a ban. Talking about racism is okay (mistakes while talking about it are forgiven once), but directly being racist will lead to direct punishment, no excuse.")
+                    embed_rules.add_field(name="3) No advertising", value="This server has a strict policy against absolutely NO ADVERTISING. Whoever is found to do so intentionally will be directly banned. If you'd like to make sure any links you want to post are NOT counting as advertisement, consult one of our Staff members!")
+                    embed_rules.add_field(name="4) No spamming", value="Here counts everything that might flood the chat with unnecessary content. Always stick to the topic! Spamming in chat will result in a mute, spamming in private messages will result in a kick/ban!")
+                    embed_rules.add_field(name="5) No mass pinging", value="Under 'mass pinging', we count unnecessary mentioning of 4+ users. Anyone caught will get muted.")
+                    embed_rules.add_field(name="6) Privacy", value=f"This server puts privacy at the front of everything. We'd kindly ask everyone to **NEVER** give out any kind of personal information, not even when staff members ask to. If they do, and threaten you with punishments if you don't listen to them, instantly message <@{ownerID}> and hold your ground. If the report is found to be true, the abuser will instantly get banned from the server and you will be rewarded. If it's false, however, you will be punished for false reporting with a warn. **Only share your personal information if you know what the consequences are.**")
+                    await channel.send(embed=embed_rules)
 
             #Enable/Disable Curse Filter
             if message.content.startswith(f"{p}cursefil"):
                 if message.author.guild_permissions.administrator:
-                    #Checks the input. A bit complicated, but hey, don't blame me.
                     if "0" in message.content[len(f"{p}cursefil "):] or "1" in message.content[len(f"{p}cursefil "):]:
-                        if not fs.exists(f"../cfil_of_{message.guild.id}.txt"):
-                            fs.write(f"../cfil_of_{message.guild.id}.txt", "0")
-                        fs.write(f"../cfil_of_{message.guild.id}.txt", message.content[len(f"{p}cursefil "):])
+                        if not fs.exists(f"cfil_of_{message.guild.id}.txt"):
+                            fs.write(f"cfil_of_{message.guild.id}.txt", "0")
+                        fs.write(f"cfil_of_{message.guild.id}.txt", message.content[len(f"{p}cursefil "):])
                         await channel.send(":white_check_mark: - Settings saved!")
                     else:
                         await channel.send(":interrobang: - Input wrong!")
@@ -233,12 +149,11 @@ class MyClient(discord.Client):
                 await channel.send("I'm dimmadone with all these haters.", file=dab)
 
             #Special SAMP Command
-            #if message.content == f"{p}server":
-                #A special command. If you don't want this to be in your server, then you could ask me to blacklist it for this command.
-            #    embed_server_color = 0xff8000
-            #    vAAssassins = client.get_guild(424073177329565696)
-            #    embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
-            #    await channel.send(embed=embed_server)
+            if message.content == f"{p}server":
+                embed_server_color = 0xff8000
+                vAAssassins = client.get_guild(424073177329565696)
+                embed_server = discord.Embed(description=f"**Server Info**", colour=embed_server_color).set_thumbnail(url=vAAssassins.icon_url).add_field(name="Server Name", value=srvinfo.hostname, inline=False).add_field(name="Host IP", value="23.94.75.34:7847", inline=False).add_field(name="Server Language", value=srvinfo.language, inline=False).add_field(name="Server Gamemode", value=srvinfo.gamemode, inline=False).add_field(name="Max Players", value=srvinfo.max_players, inline=False).add_field(name="Current Players", value=srvinfo.players, inline=False)
+                await channel.send(embed=embed_server)
 
             #Time Command
             if message.content == f"{p}time":
@@ -248,20 +163,17 @@ class MyClient(discord.Client):
             #Log Channel Command
             if message.content.startswith(f"{p}setlog"):
                 if message.author.guild_permissions.administrator or message.author.id == ownerID:
-                    #Here begins the fun. This sets the log channel. A whole lot of file editing. Codin' ain't easy.
                     if len(message.content[len(f"{p}setlog "):]) > 0:
-                        #This part checks if it's directly the ID.
                         if message.content.split()[1].isdigit():
-                            if not fs.exists(f"../log_of_{message.guild.id}.txt"):
-                                fs.write(f"../log_of_{message.guild.id}.txt", "none")
-                            fs.write(f"../log_of_{message.guild.id}.txt", message.content.split()[1])
+                            if not fs.exists(f"log_of_{message.guild.id}.txt"):
+                                fs.write(f"log_of_{message.guild.id}.txt", "none")
+                            fs.write(f"log_of_{message.guild.id}.txt", message.content.split()[1])
                             await channel.send(":white_check_mark: - Log Channel set!")
-                        #This part checks if it's a simple channel mention. Handy, huh?
                         elif message.content.split()[1].startswith("<#"):
                             chanID = message.content[len(p + "setlog <#"):-1]
-                            if not fs.exists(f"../log_of_{message.guild.id}.txt"):
-                                fs.write(f"../log_of_{message.guild.id}.txt", "none")
-                            fs.write(f"../log_of_{message.guild.id}.txt", "".join(chanID))
+                            if not fs.exists(f"log_of_{message.guild.id}.txt"):
+                                fs.write(f"log_of_{message.guild.id}.txt", "none")
+                            fs.write(f"log_of_{message.guild.id}.txt", "".join(chanID))
                             await channel.send(":white_check_mark: - Log Channel set!")
                         else:
                             await channel.send(":interrobang: - The input is not right!")
@@ -274,7 +186,6 @@ class MyClient(discord.Client):
 
             #Mute Command
             if message.content.startswith(f"{p}mute"):
-                #REMEMBER! The mute/unmute commands require the "DSB Muted" role.
                 if message.author.guild_permissions.manage_roles or message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.mentions) > 0:
                         muteTarget = message.mentions[0]
@@ -287,7 +198,6 @@ class MyClient(discord.Client):
                             break
                     if not isAlreadyMuted:
                         if muteTarget.id == ownerID:
-                            #No way in hell you'll mute ME.
                             await channel.send(":exclamation: - Hey, you can't mute my owner!")
                         else:
                             roles = [mutedRole for mutedRole in message.guild.roles if mutedRole.name == "DSB Muted"]
@@ -311,7 +221,6 @@ class MyClient(discord.Client):
 
             #Unmute Command
             if message.content.startswith(f"{p}unmute"):
-                #Again, "DSB Muted" required at all.
                 if message.author.guild_permissions.manage_roles or message.author.guild_permissions.administrator or message.author.id == ownerID:
                     if len(message.mentions) > 0:
                         unmuteTarget = message.mentions[0]
@@ -348,13 +257,13 @@ class MyClient(discord.Client):
                         unwarnTarget = message.mentions[0]
                     else:
                         unwarnTarget = message.guild.get_member(message.content.split(" ")[1])
-                    if not fs.exists(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt"):
+                    if not fs.exists(f"admin_warns_of_{unwarnTarget.id}.txt"):
                         await channel.send("The mentioned user has never been warned at all...!")
-                    elif fs.exists(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt"):
-                        with open(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt", "r+") as file:
+                    elif fs.exists(f"admin_warns_of_{unwarnTarget.id}.txt"):
+                        with open(f"admin_warns_of_{unwarnTarget.id}.txt", "r+") as file:
                             warn = int(file.read())
                         if warn > 0:
-                            fs.write(f"../admin_warns_of_{unwarnTarget.id}_in_{message.guild.id}.txt", "0")
+                            fs.write(f"admin_warns_of_{unwarnTarget.id}.txt", "0")
                             await channel.send("User's warns have been cleaned!")
                             file.close()
                         elif warn == 0:
@@ -369,23 +278,23 @@ class MyClient(discord.Client):
                         warnTarget = message.mentions[0]
                     else:
                         warnTarget = message.guild.get_member(message.content.split(" ")[1])
-                    if not fs.exists(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt"):
-                        fs.write(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "0")
-                    with open(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "r+") as file:
+                    if not fs.exists(f"admin_warns_of_{warnTarget.id}.txt"):
+                        fs.write(f"admin_warns_of_{warnTarget.id}.txt", "0")
+                    with open(f"admin_warns_of_{warnTarget.id}.txt", "r+") as file:
                         warn = int(file.read())
                     if warn < 3:
                         warn += 1
                         await channel.send("Warn successful!")
-                        fs.write(f"../admin_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", str(warn))
+                        fs.write(f"admin_warns_of_{warnTarget.id}.txt", str(warn))
                         file.close()
                     elif warn == 3:
-                        if not fs.exists(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt"):
-                            fs.write(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "0")
-                        with open(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", "r+") as banfile:
+                        if not fs.exists(f"ban_warns_of_{warnTarget.id}.txt"):
+                            fs.write(f"ban_warns_of_{warnTarget.id}.txt", "0")
+                        with open(f"ban_warns_of_{warnTarget.id}.txt", "r+") as banfile:
                             banwarns = banfile.read()
                         if banwarns < 2:
                             banwarns += 1
-                            fs.write(f"../ban_warns_of_{warnTarget.id}_in_{message.guild.id}.txt", str(banwarns))
+                            fs.write(f"ban_warns_of_{warnTarget.id}.txt", str(banwarns))
                             warn_kick_embed_color = 0xFFFF00
                             await warnTarget.kick(reason=f"The user has been warned by {message.author.name} and the warns have been exceeded.")
                             warn_kick_embed = discord.Embed(title="Admin Log: Member Kick", description=f"A kick has been issued on {warnTarget.name}", colour=warn_kick_embed_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Kicked Member", value=f"{warnTarget.name}").add_field(name="Reason", value="Warns have been exceeded.")
@@ -400,20 +309,20 @@ class MyClient(discord.Client):
 
             #@everyone Filter
             if not message.content.startswith(f"{p}osay"):
-                #The @everyone filter. Can't be deactivated. Make sure to check the requirements before thinking you can @everyone .
                 if message.mention_everyone:
                     if message.author.guild_permissions.administrator or message.author.guild_permissions.kick_members or message.author.guild_permissions.ban_members or message.author.guild_permissions.manage_channels or message.author.guild_permissions.view_audit_log or message.author.guild_permissions.manage_guild or message.author.guild_permissions.manage_messages:
                         pass
                     else:
-                        if not fs.exists(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt"):
-                            fs.write(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", "0")
-                        with open(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", "r+") as file:
+                        if not fs.exists(f"warns_of_{message.author.id}.txt"):
+                            fs.write(f"warns_of_{message.author.id}.txt", "0")
+                        with open('warns_of_{}.txt'.format(message.author.id), 'r+') as file:
                             warn = int(file.read())
                         if warn < 3:
                             warn += 1
                             await message.delete()
                             await channel.send(f"<@{message.author.id}> , please don't use ``@everyone``!")
-                            fs.write(f"../warns_of_{message.author.id}_in_{message.guild.id}.txt", str(warn))
+                            fs.write(f"warns_of_{message.author.id}.txt", str(warn))
+                            file.close()  # here
                         elif warn == 3:
                             await message.delete()
                             filterTargetName = message.author.name
@@ -428,7 +337,6 @@ class MyClient(discord.Client):
 
             #Name Command
             if message.content.startswith(f"{p}name"):
-                #I was bored, blame my brains!
                 args = message.content.split()[1:]
                 target = args[0]
                 uName = message.guild.get_member(int(target))
@@ -451,7 +359,6 @@ class MyClient(discord.Client):
 
             #OSay Command
             if message.content.startswith(f"{p}osay"):
-                #OY! VIP ONLY!
                 has_forbidden_role = False
                 await message.delete()
                 for role in message.author.roles:
@@ -469,7 +376,6 @@ class MyClient(discord.Client):
 
             #OPM Command
             if message.content.startswith(f"{p}opm"):
-                #VIP only again.
                 try:
                     await message.delete()
                     memberToPM = message.mentions[0]
@@ -481,7 +387,6 @@ class MyClient(discord.Client):
 
             #Rand Command
             if message.content.startswith(f"{p}rand"):
-                #Randomize your number.
                 number = message.content.split()[1]
                 if number.isdigit():
                     randomized = random.uniform(1, int(number))
@@ -496,7 +401,7 @@ class MyClient(discord.Client):
 
             #UserCount Command
             if message.content == f"{p}usercount":
-                await channel.send("``{}`` members are on this server. Thank you for using me! :blush:".format(len(message.guild.members)))
+                await channel.send("``{}`` members are on this server!".format(len(message.guild.members)))
 
             #Quit Command
             if message.content == f"{p}quit":
@@ -508,20 +413,17 @@ class MyClient(discord.Client):
 
             #Quick Quit Command
             if message.content == "q":
-                #It's a pain to write DD!quit down. Leave me alone :(
                 if message.author.id == ownerID:
                     await client.logout()
 
             #UserStats Command
             if message.content.startswith(f"{p}userstats"):
-                #This might be the longest command of all.
                 try:
                     if len(message.content.split()[1:]) != 0:
                         if len(message.mentions) > 0:
                             intendedMember = message.mentions[0]
                         else:
-                            intMemID = "".join((message.content.split()[1:]))
-                            intendedMember = message.guild.get_member(int(intMemID))
+                            intendedMember = message.guild.get_member(int(message.content.split()[1:]))
                     else:
                         intendedMember = message.author
                     roles = intendedMember.roles
@@ -537,18 +439,18 @@ class MyClient(discord.Client):
                         memActivity = intendedMember.activity.name
                     elif not intendedMember.activity:
                         memActivity = "None"
-                    if fs.exists(f"../warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
-                        with open(f"../warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file1:
+                    if fs.exists(f"warns_of_{intendedMember.id}.txt"):
+                        with open(f"warns_of_{intendedMember.id}.txt", "r+") as file1:
                             filter_warns = file1.read()
                     else:
                         filter_warns = "0"
-                    if fs.exists(f"../admin_warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
-                        with open(f"../admin_warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file2:
+                    if fs.exists(f"admin_warns_of_{intendedMember.id}.txt"):
+                        with open(f"admin_warns_of_{intendedMember.id}.txt", "r+") as file2:
                             admin_warns = file2.read()
                     else:
                         admin_warns = "0"
-                    if fs.exists(f"../ban_warns_of_{intendedMember.id}_in_{message.guild.id}.txt"):
-                        with open(f"../ban_warns_of_{intendedMember.id}_in_{message.guild.id}.txt", "r+") as file3:
+                    if fs.exists(f"ban_warns_of_{intendedMember.id}.txt"):
+                        with open(f"ban_warns_of_{intendedMember.id}.txt", "r+") as file3:
                             ban_warns = file3.read()
                     else:
                         ban_warns = "0"
@@ -561,7 +463,6 @@ class MyClient(discord.Client):
 
             #Purge Command
             if message.content.startswith(f"{p}purge"):
-                #Remember, PURGE, not PRUNE .
                 if message.author.id == ownerID or message.author.guild_permissions.manage_messages:
                     if message.content.split()[1].isdigit():
                         await message.delete()
@@ -641,25 +542,25 @@ class MyClient(discord.Client):
                     await channel.send("You do not have permission to execute this command!")
 
             #Unban Command
-            if message.content.startswith(f"{p}unban"):
-                if message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID:
-                    await message.delete()
-                    if len(message.content.split()[1]) == 0:
-                        await channel.send("Hey, make sure to use the ID of the banned user! Use ``pirabot-blist`` to see who you'd like to unban.")
-                    else:
-                        try:
-                            memberToUnban = await client.get_user_info(user_id=message.content.split()[1])
-                            if len(message.content.split(" ")[2:]) > 0:
-                                unban_reason = message.content.split(" ")[2:]
-                            else:
-                                unban_reason = "No reason provided."
-                            await message.guild.unban(user=memberToUnban, reason=" ".join(unbanReason))
-                            await channel.send(embed=discord.Embed(title="User Unban", description=f"{memberToUnban} successfully unbanned!", color=0x00FF00))
-                            embed_unban_color = 0x00FF00
-                            embed_unban = discord.Embed(title="Admin Log: Member Unban", description=f"An unban has been issued on the user {memberToUnban}", colour=embed_unban_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Unbanned User", value=f"{memberToUnban}").add_field(name="Reason", value=" ".join(unbanReason))
-                            await log_channel.send(embed=embed_unban)
-                        except Exception as e:
-                            await channel.send(f"Are you sure your ID is correct? The input threw a ``{e.__class__.__name__}``!\nStatistics for nerds: ``{e.__class__.__name__}: {e}``")
+            if message.content.startswith(f"{p}unban") and (
+                    message.author.guild_permissions.administrator or message.author.guild_permissions.ban_members or message.author.id == ownerID):
+                await message.delete()
+                if len(message.content.split()[1]) == 0:
+                    await channel.send("Hey, make sure to use the ID of the banned user! Use ``pirabot-blist`` to see who you'd like to unban.")
+                else:
+                    try:
+                        memberToUnban = await client.get_user_info(user_id=message.content.split()[1])
+                        if len(message.content.split(" ")[2:]) > 0:
+                            unban_reason = message.content.split(" ")[2:]
+                        else:
+                            unban_reason = "No reason provided."
+                        await message.guild.unban(user=memberToUnban, reason=" ".join(unbanReason))
+                        await channel.send(embed=discord.Embed(title="User Unban", description=f"{memberToUnban} successfully unbanned!", color=0x00FF00))
+                        embed_unban_color = 0x00FF00
+                        embed_unban = discord.Embed(title="Admin Log: Member Unban", description=f"An unban has been issued on the user {memberToUnban}", colour=embed_unban_color).set_thumbnail(url=message.author.avatar_url).add_field(name="Admin", value=f"{message.author.name}").add_field(name="Unbanned User", value=f"{memberToUnban}").add_field(name="Reason", value=" ".join(unban_reason))
+                        await log_channel.send(embed=embed_unban)
+                    except Exception as e:
+                        await channel.send(f"Are you sure your ID is correct? The input threw a ``{e.__class__.__name__}``!\nStatistics for nerds: ``{e.__class__.__name__}: {e}``")
 
             #Ban List Command
             if message.content == f"{p}blist":
@@ -671,9 +572,8 @@ class MyClient(discord.Client):
 
             #Log Test Command
             if message.content == f"{p}testlog":
-                #Tests the log. Standard.
-                if fs.exists(f"../log_of_{message.guild.id}.txt"):
-                    with open(f"../log_of_{message.guild.id}.txt", "r+") as file:
+                if fs.exists(f"log_of_{message.guild.id}.txt"):
+                    with open(f"log_of_{message.guild.id}.txt", "r+") as file:
                         teststr = file.read()
                     await channel.send(f"The log ID of this guild is ``{teststr}``, which points to <#{teststr}> !")
                 else:
@@ -681,105 +581,77 @@ class MyClient(discord.Client):
 
             #Set Announce Ch Command
             if message.content.startswith(f"{p}setannounce"):
-                #Sets the announcement channel for DD!announce .
                 if message.author.guild_permissions.administrator:
                     if len(message.content[len(f"{p}setannounce "):]) > 0:
                         if message.content.split()[1].isdigit():
-                            if not fs.exists(f"../annch_of_{message.guild.id}.txt"):
-                                fs.write(f"../annch_of_{message.guild.id}.txt", "none")
-                            fs.write(f"../annch_of_{message.guild.id}.txt", message.content.split()[1])
-                            await channel.send(":white_check_mark: - Announcement Channel set!")
+                            if not fs.exists(f"annch_of_{message.guild.id}.txt"):
+                                fs.write(f"annch_of_{message.guild.id}.txt", "none")
+                            fs.write(f"annch_of_{message.guild.id}.txt", message.content.split()[1])
+                            await channel.send(":white_check_mark: - Log Channel set!")
                         elif message.content.split()[1].startswith("<#"):
                             chanID = message.content[len(p + "setannounce <#"):-1]
-                            if not fs.exists(f"../annch_of_{message.guild.id}.txt"):
-                                fs.write(f"../annch_of_{message.guild.id}.txt", "none")
-                            fs.write(f"../annch_of_{message.guild.id}.txt", "".join(chanID))
-                            await channel.send(":white_check_mark: - Announcement Channel set!")
+                            if not fs.exists(f"annch_of_{message.guild.id}.txt"):
+                                fs.write(f"annch_of_{message.guild.id}.txt", "none")
+                            fs.write(f"annch_of_{message.guild.id}.txt", "".join(chanID))
+                            await channel.send(":white_check_mark: - Log Channel set!")
                         else:
                             await channel.send(":interrobang: - The input is not right!")
-                    else:
-                        if fs.exists(f"../annch_of_{message.guild.id}.txt"):
-                            os.delete(f"../annch_of_{message.guild.id}.txt")
-                        await channel.send(":exclamation: - Announcement channel deleted!")
                 else:
                     await channel.send(":interrobang: - You can't use this!")
 
             #Announce Command
             if message.content.startswith(f"{p}announce"):
-                #Just say your text and enjoy the bot doing the work for you.
                 if message.author.guild_permissions.administrator:
                     if len(message.content[len(f"{p}announce "):]) > 0:
                         await message.delete()
-                        if fs.exists(f"../annch_of_{message.guild.id}.txt"):
-                            with open(f"../annch_of_{message.guild.id}.txt", "r+") as file:
+                        if fs.exists(f"annch_of_{message.guild.id}.txt"):
+                            with open(f"annch_of_{message.guild.id}.txt", "r+") as file:
                                 chanID = file.read()
                             annChan = message.guild.get_channel(int(chanID))
                             await annChan.send(f"@everyone\n**This announcement is made by <@{message.author.id}> !**\n\n " + " ".join(message.content.split(" ")[1:]))
                         else:
-                            await channel.send(f":interrobang: - This guild has no announcement channel set! Make sure to set it using ``{p}setannounce``!")
+                            await channel.send(f":interrobang: - This guild has no log channel set! Make sure to set it using ``{p}setlog``!")
                     else:
                         await channel.send(":interrobang: - You didn't say anything!")
                 else:
                     await channel.send(":interrobang: - You're not allowed to use this command!")
 
+            #Test Command
+            if message.content.startswith(f"{p}testthis"):
+                await channel.send("I work!")
+
             #Set Welcome Command
             if message.content.startswith(f"{p}setwelcome"):
-                #Oh God, the simplest concepts require the best coding skills. Have fun with this.
-                if message.author.guild_permissions.administrator or message.author.id == ownerID:
+                if message.author.guild_permissions.administrator:
                     if len(message.channel_mentions) > 0:
                         if len(message.content.split()[2:]) > 0:
-                            if not fs.exists(f"../welc_ch_of_{message.guild.id}.txt"):
-                                fs.write(f"../welc_ch_of_{message.guild.id}.txt", "0")
-                            fs.write(f"../welc_ch_of_{message.guild.id}.txt", f"{message.channel_mentions[0].id}")
-                            if not fs.exists(f"../welc_msg_of_{message.guild.id}.txt"):
-                                fs.write(f"../welc_msg_of_{message.guild.id}.txt", "None")
+                            if not fs.exists(f"welc_ch_of_{message.guild.id}.txt"):
+                                fs.write(f"welc_ch_of_{message.guild.id}.txt", "0")
+                            fs.write(f"welc_ch_of_{message.guild.id}.txt", f"{message.channel_mentions[0].id}")
+                            if not fs.exists(f"welc_msg_of_{message.guild.id}.txt"):
+                                fs.write(f"welc_msg_of_{message.guild.id}.txt", "None")
                             welcMsg = " ".join(message.content.split(" ")[2:])
-                            fs.write(f"../welc_msg_of_{message.guild.id}.txt", welcMsg)
+                            fs.write(f"welc_msg_of_{message.guild.id}.txt", welcMsg)
                             await channel.send(f":white_check_mark: - Channel saved as <#{message.channel_mentions[0].id}> and message saved as:\n\n{welcMsg}\n")
                         else:
                             await channel.send(":interrobang: - Please define a message!")
                     else:
-                        if fs.exists(f"../welc_msg_of_{message.guild.id}.txt"):
-                            os.remove(f"../welc_msg_of_{message.guild.id}.txt")
-                        if fs.exists(f"../welc_ch_of_{message.guild.id}.txt"):
-                            os.remove(f"../welc_ch_of_{message.guild.id}.txt")
+                        if fs.exists(f"welc_msg_of_{message.guild.id}.txt"):
+                            os.remove(f"welc_msg_of_{message.guild.id}.txt")
+                        if fs.exists(f"welc_ch_of_{message.guild.id}.txt"):
+                            os.remove(f"welc_ch_of_{message.guild.id}.txt")
                         await channel.send(":exclamation: - Deleted all welcome settings for this server!")
-                else:
-                    await channel.send(":interrobang: - You don't have permission to do this!")
-
-            #Set Leave Command
-            if message.content.startswith(f"{p}setleave"):
-                if message.author.guild_permissions.administrator or message.author.id == ownerID:
-                    if len(message.channel_mentions) > 0:
-                        if len(message.content.split()[2:]) > 0:
-                            if not fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
-                                fs.write(f"../bye_ch_of_{message.guild.id}.txt", "0")
-                            fs.write(f"../bye_ch_of_{message.guild.id}.txt", f"{message.channel_mentions[0].id}")
-                            if not fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
-                                fs.write(f"../bye_msg_of_{message.guild.id}.txt", "None")
-                            byeMsg = " ".join(message.content.split(" ")[2:])
-                            fs.write(f"../bye_msg_of_{message.guild.id}.txt", byeMsg)
-                            await channel.send(f":white_check_mark: - Channel saved as <#{message.channel_mentions[0].id}> and message saved as:\n\n{byeMsg}\n")
-                        else:
-                            await channel.send(":interrobang: - Please define a message!")
-                    else:
-                        if fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
-                            os.remove(f"../bye_msg_of_{message.guild.id}.txt")
-                        if fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
-                            os.remove(f"../bye_ch_of_{message.guild.id}.txt")
-                        await channel.send(":exclamation: - Deleted all leave settings for this server!")
                 else:
                     await channel.send(":interrobang: - You don't have permission to do this!")
 
             #Test Welcome Command
             if message.content.startswith(f"{p}testwelcome"):
-                #Tests the welcome feature.
                 if message.author.guild_permissions.administrator or message.author.id == ownerID:
-                    if fs.exists(f"../welc_ch_of_{message.guild.id}.txt"):
-                        if fs.exists(f"../welc_msg_of_{message.guild.id}.txt"):
-                            with open(f"../welc_ch_of_{message.guild.id}.txt", "r+") as file1:
+                    if fs.exists(f"welc_ch_of_{message.guild.id}.txt"):
+                        if fs.exists(f"welc_msg_of_{message.guild.id}.txt"):
+                            with open(f"welc_ch_of_{message.guild.id}.txt", "r+") as file1:
                                 welcCh = client.get_channel(int(file1.read()))
-                            with open(f"../welc_msg_of_{message.guild.id}.txt", "r+") as file2:
+                            with open(f"welc_msg_of_{message.guild.id}.txt", "r+") as file2:
                                 msg = file2.read()
                             if "{USERNAME}" in msg:
                                 msg = msg.replace("{USERNAME}", f"{message.author.name}")
@@ -789,8 +661,6 @@ class MyClient(discord.Client):
                                 msg = msg.replace("{MENTION}", f"<@{message.author.id}>")
                             if "{SRVNAME}" in msg:
                                 msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
-                            if "{USERCOUNT}" in msg:
-                                msg = msg.replace("{USERCOUNT}", f"{len(message.guild.members)}")
                             await welcCh.send(msg)
                         else:
                             await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
@@ -799,72 +669,23 @@ class MyClient(discord.Client):
                 else:
                     await channel.send(":interrobang: - You are not allowed to use this here!")
 
-            #Test Leave Command
-            if message.content.startswith(f"{p}testleave"):
-                #Tests the leave feature.
-                if message.author.guild_permissions.administrator or message.author.id == ownerID:
-                    if fs.exists(f"../bye_ch_of_{message.guild.id}.txt"):
-                        if fs.exists(f"../bye_msg_of_{message.guild.id}.txt"):
-                            with open(f"../bye_ch_of_{message.guild.id}.txt", "r+") as file1:
-                                byeCh = client.get_channel(int(file1.read()))
-                            with open(f"../bye_msg_of_{message.guild.id}.txt", "r+") as file2:
-                                msg = file2.read()
-                            if "{USERNAME}" in msg:
-                                msg = msg.replace("{USERNAME}", f"{message.author.name}")
-                            if "{USERID}" in msg:
-                                msg = msg.replace("{USERID}", f"{message.author.id}")
-                            if "{SRVNAME}" in msg:
-                                msg = msg.replace("{SRVNAME}", f"{message.guild.name}")
-                            if "{USERCOUNT}" in msg:
-                                msg = msg.replace("{USERCOUNT}", f"{len(message.guild.members)}")
-                            await byeCh.send(msg)
-                        else:
-                            await channel.send(":interrobang: - Mysteriously enough, the message to send is missing! Please redefine your channel and message and try again.")
-                    else:
-                        await channel.send(f":interrobang: - No channel is set as the welcome channel! Did you use ``{p}setleave``?")
-                else:
-                    await channel.send(":interrobang: - You are not allowed to use this here!")
-
             #Ping Command
             if message.content.startswith(f"{p}ping"):
-                #LIGHTNING FAST!...or not.
                 current_time = int(round(time.time()*1000))
                 m = await channel.send("Pong! ---ms")
                 last_time = int(round(time.time()*1000))
                 last_time -= current_time
                 await m.edit(content="Pong! {}ms".format(last_time))
 
-            #Test Command
-            if message.content.startswith(f"{p}testthis"):
-                #NERF THIS!
-                await channel.send("I work!")
-
-            #Member List Command
-            if message.content == f"{p}members":
-                if message.author.id == ownerID:
-                    m = await channel.send(":timer: - This command might take a few minutes, please stay patient.")
-                    if not fs.exists(f"../members_of_{message.guild.id}.txt"):
-                        fs.write(f"../members_of_{message.guild.id}.txt", "")
-                    for member in message.guild.members:
-                        fs.append(f"../members_of_{message.guild.id}.txt", f"Member name: {member.name} | ID: {member.id}\n")
-                    memberList = discord.File(f"../members_of_{message.guild.id}.txt")
-                    await channel.send(":white_check_mark: - File delivered!", file=memberList)
-                    await m.delete()
-                else:
-                    await channel.send(":interrobang: - This command has been blocked for security, as it would lag the bot on giant servers! Please contact the owner if you'd wish to use this.")
-
             #Help Command
             if message.content == f"{p}help":
-                #No, I won't describe every single command. That's a real pain.
                 embed_help_colour = 0xFF00FF
-                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False).add_field(name="members", value="Sends the data of all the members on the server (only name and ID).", inline=False)
+                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="about", value="Basic/advanced information about the bot!").add_field(name="id", value="Gets the ID of the user who uses the command and says it openly in chat.", inline=False).add_field(name="name <ID>", value="Shows the name based of an user's ID.", inline=False).add_field(name="say <message>", value="Repeats the words said. If @everyone is inside of the input, the message will get replaced.", inline=False).add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
                 await channel.send(embed=embed_help)
-                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome and leave feature! Make sure to check it using ``{p}help +welcome``!")
+                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
 
-            #Welcome/Leave Help Command
             if message.content == f"{p}help +welcome":
-                await channel.send("This bot supports a welcome and leave feature that welcomes everyone new into the server, or sends his regards to someone leaving! To enable it, use the following commands:\n\n``DD!setwelcome <channel> <message>`` and ``DD!setleave <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member. **This option does not work for the leave version!**\n{SRVNAME} - The server's name.\n{USERCOUNT} - The server's user count.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
-                await channel.send("Also, don't use emojis! The bot's emoji decryptor will handle them wrong and paste them as weird code. Rather use default chat faces, for example: ``:)``, ``:(``, ``8P`` etc.")
+                await channel.send("This bot supports a welcome feature that welcomes everyone new into the server! To enable it, use the following command:\n\n``DD!setwelcome <channel> <message>``\n\nRequired permissions to use this feature: ``administrator``\nThe channel must be mentioned normally.\nThe message to send also supports a few tricks to make it fancier!\nIn order to use these, please write them down WITH the brackets!\n```{USERNAME} - The username of the new member.\n{USERID} - The simple ID of the new member.\n{MENTION} - Mentions the new member.\n{SRVNAME} - The server's name.```\n\n:exclamation: **PLEASE NOTICE!** Not mentioning any channel will delete any current settings for the entire guild. Please make sure the channel is valid and that the bot can use it!")
 
             #Everyone Help Command
             if message.content == f"{p}help +everyone":
@@ -888,16 +709,6 @@ class MyClient(discord.Client):
                 embed_help_admin.add_field(name="cursefil <0/1>", value="Enables/disables the curse filter for the server. Default is at ``0``. ``0`` - Disabled; ``1`` - Enabled.\nRequired permissions: ``administrator``")
                 await channel.send(embed=embed_help_admin)
 
-            #Tags Help Command
-            if message.content == f"{p}help +tags":
-                embed_help_tags = discord.Embed(title=f"Tag Commands - {p}tags", description="The tags are a flexible way of making your own text inside of the bot. Please notice that they are not perfect. Contact the owner if anything isn't as it should be!", color=0x00FF00)
-                embed_help_tags.add_field(name="create <name> <value>", value="Create your own tags! Please notice that the tags can't handle any kind of file uploads. If you want to insert a file, make it be a direct link!")
-                embed_help_tags.add_field(name="edit <name> <new value>", value="Edit your own tags! Made a typo? Don't worry. This command will save you.\n**ADMIN NOTICE** - If an inappropriate tag has been located, please contact the bot owner! He will delete it.")
-                embed_help_tags.add_field(name="delete <name>", value="Deletes a tag! You MUST be the creator of the tag(s) you want to delete. If an inappropriate tag is created, contact the bot owner!")
-                embed_help_tags.add_field(name="mytags", value="Check which tags you own!\n**PLEASE NOTICE** - The bot is not compatible to mark a tag as 'deleted' if the bot owner removes it on admin request. If you can't seem to open your tag, it most likely means that it's been deleted by the bot owner.")
-                embed_help_tags.add_field(name="Loading tags... *insert Windows XP loading sound*", value="If you want to simply load the tags, then type the name in and you're good to go!")
-                await channel.send(embed=embed_help_tags)
-
             #Good Bot
             if message.content == "good bot!":
                 await channel.send(":heart: :robot:")
@@ -908,7 +719,6 @@ class MyClient(discord.Client):
 
             #Bot Gei
             if message.content == "bot gei":
-                #The holy counter against meme masters.
                 no = discord.File("C:/Users/CritZ/Pictures/nobelium.png")
                 u = discord.File("C:/Users/CritZ/Pictures/uranium.png")
                 await channel.send(file=no)
@@ -916,10 +726,9 @@ class MyClient(discord.Client):
 
             #Suggest Command
             if message.content.startswith(f"{p}suggest"):
-                #Keep the suggestions flowing! I'm bored on my own. :(
                 await message.delete()
                 suggestion = message.content.split(" ")[1:]
-                suggch = client.get_channel(423477556810088450)
+                suggch = client.get_channel(448496794809401354)
                 await suggch.send(f"{message.author.name} ``{message.author.id}`` from {message.guild.name} ``{message.guild.id}`` suggested: ``" + " ".join(suggestion) + "``")
 
 
