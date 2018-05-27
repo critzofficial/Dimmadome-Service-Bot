@@ -2,6 +2,7 @@
 #from typing import List
 
 import logging
+import hashlib
 import discord
 import sys
 import random
@@ -38,10 +39,18 @@ class MyClient(discord.Client):
         print(f"Script loaded and ready to be used!\nName: {self.user}\nID: {self.user.id}\nDiscriminator: {self.user.discriminator}\n\nCurrently running on - {len(self.guilds)} - servers!\n")
         #for guild in self.guilds:
         #    print(f"Guild name: {guild.name} | Guild ID: {guild.id}")
+
+        #Development Game Name
         #game_name = "Bot under development"
+
+        #Regular Game Name
         game_name = f"| {p}help |"
         bot_game = discord.Game(name=str(game_name))
+
+        #Development Status
         #bot_status = discord.Status("dnd")
+
+        #Regular Status
         bot_status = discord.Status("online")
         await client.change_presence(activity=bot_game, status=bot_status)
 
@@ -114,8 +123,13 @@ class MyClient(discord.Client):
                     with open(f"../cfil_of_{message.guild.id}.txt", "r+") as file:
                         cfilsetting = int(file.read())
                     if cfilsetting == 1:
-                        await message.delete()
-                        await channel.send(f"<@{message.author.id}> , please don't swear!")
+                        try:
+                            await message.delete()
+                        except discord.errors.Forbidden:
+                            SrvOwner = client.get_user(message.guild.owner_id)
+                            await SrvOwner.send(f":exclamation: - Sorry if I interrupt, but I happened to not be able to delete a message that was supposed to be blocked by the curse filter in your server named ``{message.guild.name}``! The error is that I don't have permissions. Please make sure to disable the curse filter or give me permissions to manage messages. *This message can't be disabled.*")
+                        finally:
+                            await channel.send(f"<@{message.author.id}> , please don't swear!")
                     else:
                         pass
 
@@ -857,10 +871,17 @@ class MyClient(discord.Client):
                 last_time -= current_time
                 await m.edit(content="Pong! {}ms".format(last_time))
 
+            #Quick Google Search Command
+            if message.content.startswith(f"{p}google"):
+                #This command is made to quickly google something. Please note that this is a link generator and that it will not affect the owner's account at all.
+                search = "+".join(message.content.split(" ")[1:])
+                rawSearch = " ".join(message.content.split(" ")[1:])
+                await channel.send(embed=discord.Embed(title="Google Search", description=f"Search Content: {rawSearch}\nClick [here](https://www.google.com/search?q={search}) to access your generated link.", color=int(hashlib.md5(rawSearch.encode('utf-8')).hexdigest()[:6], 16)))
+
             #Help Command
             if message.content == f"{p}help":
                 embed_help_colour = 0xFF00FF
-                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="about", value="Basic/advanced information about the bot!").add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="guildstats", value="Showcases the guild's basic information. If the guild has an icon, the icon will be showcased too.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
+                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="about", value="Basic/advanced information about the bot!").add_field(name="google <content>", value="Google something quickly! Will generate a link for you to open.").add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="guildstats", value="Showcases the guild's basic information. If the guild has an icon, the icon will be showcased too.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
                 await channel.send(embed=embed_help)
                 await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
 
