@@ -873,10 +873,11 @@ class MyClient(discord.Client):
 
             #Quick Google Search Command
             if message.content.startswith(f"{p}google"):
-                #This command is made to quickly google something. Please note that this is a link generator and that it will not affect the owner's account at all.
-                search = "+".join(message.content.split(" ")[1:])
-                rawSearch = " ".join(message.content.split(" ")[1:])
-                await channel.send(embed=discord.Embed(title="Google Search", description=f"Search Content: {rawSearch}\nClick [here](https://www.google.com/search?q={search}) to access your generated link.", color=int(hashlib.md5(rawSearch.encode('utf-8')).hexdigest()[:6], 16)))
+                if not any(x in curse_list for x in message.content.split(" ")[1:]):
+                    #This command is made to quickly google something. Please note that this is a link generator and that it will not affect the owner's account at all.
+                    search = "+".join(message.content.split(" ")[1:])
+                    rawSearch = " ".join(message.content.split(" ")[1:])
+                    await channel.send(embed=discord.Embed(title="Google Search", description=f"Search Content: {rawSearch}\nClick [here](https://www.google.com/search?q={search}) to access your generated link.", color=int(hashlib.md5(rawSearch.encode('utf-8')).hexdigest()[:6], 16)))
 
             #Help Command
             if message.content == f"{p}help":
