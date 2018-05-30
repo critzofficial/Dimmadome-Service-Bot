@@ -104,7 +104,7 @@ class MyClient(discord.Client):
                     await SrvOwner.send(f":exclamation: - Please make sure that I have permissions to send the welcome messages into the channel you (or your admins) specified!\n\nError: ``{e.__class__.__name__}: {e}``")
 
     async def on_message(self, message):
-        global memActivity, log_channel
+        global memActivity, log_channel, rolePerms, roleColor, roleHoist, roleMentionable, roleReason
         channel = message.channel
 
         if not message.author.bot:
@@ -879,12 +879,76 @@ class MyClient(discord.Client):
                     rawSearch = " ".join(message.content.split(" ")[1:])
                     await channel.send(embed=discord.Embed(title="Google Search", description=f"Search Content: {rawSearch}\nClick [here](https://www.google.com/search?q={search}) to access your generated link.", color=int(hashlib.md5(rawSearch.encode('utf-8')).hexdigest()[:6], 16)))
 
+            #Create Role Command
+            if message.content.startswith(f"{p}createrole"):
+                if message.author.id == ownerID:
+                    if message.author.guild_permissions.manage_roles:
+                        if len(message.content[13:]) > 0:
+                            roleName = "".join(message.content.split("-")[1])
+                            if len(message.content[len(f"{p}createrole-{roleName}-"):]) > 0:
+                                if len(message.content.split("-")[2]) > 0 and (message.content.split("-")[2].isdigit()):
+                                    rolePerms = discord.Permissions(permissions=int("".join(message.content.split("-")[2])))
+                            else:
+                                rolePerms = discord.Permissions()
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-"):]) > 0:
+                                if len(message.content.split("-")[3]) > 0:
+                                    roleColor = "".join(message.content.split("-")[3])
+                            else:
+                                roleColor = discord.Color(value=0x000000)
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-"):]) > 0:
+                                if len(message.content.split("-")[4]) > 0 and (message.content.split("-")[4] == "True"):
+                                    roleHoist = True
+                                elif len(message.content.split("-")[4]) > 0 and (message.content.split("-")[4] == "False"):
+                                    roleHoist = False
+                            else:
+                                roleHoist = False
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-"):]) > 0:
+                                if len(message.content.split("-")[5]) > 0 and (message.content.split("-")[5] == "True"):
+                                    roleMentionable = True
+                                elif len(message.content.split("-")[5]) > 0 and (message.content.split("-")[5] == "False"):
+                                    roleMentionable = False
+                            else:
+                                roleMentionable = False
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-{roleMentionable}-"):]) > 0:
+                                if len(message.content.split("-")[6:]) > 0:
+                                    roleReasonRaw = "".join(message.content.split("-")[6:])
+                                    roleReason = f"Made by {message.author.name} - {roleReasonRaw}"
+                            else:
+                                roleReason = f"Made by {message.author.name} - No reason specified."
+                            try:
+                                await message.guild.create_role(name=roleName, permissions=rolePerms, color=roleColor, hoist=roleHoist, mentionable=roleMentionable, reason=roleReason)
+                                await message.add_reaction(emoji="\N{WHITE HEAVY CHECK MARK}")
+                            except Exception as e:
+                                await channel.send(f"```Whoops! An error occured while creating the role.\n{e.__class__.__name__} : {e}```")
+                                print(e)
+                                await message.add_reaction(emoji="\N{NO ENTRY}")
+                else:
+                    await channel.send(":exclamation: - This is a command under development, thou shall not pass!")
+
             #Help Command
-            if message.content == f"{p}help":
-                embed_help_colour = 0xFF00FF
-                embed_help = discord.Embed(title="Help Window", description=f"This bot's prefix is ``{p}``.", colour=embed_help_colour).set_thumbnail(url=message.author.avatar_url).set_footer(text="All commands HAVE to be lower-case!").set_author(name=message.author).add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False).add_field(name="about", value="Basic/advanced information about the bot!").add_field(name="google <content>", value="Google something quickly! Will generate a link for you to open.").add_field(name="ping", value="Check the speed of the bot!", inline=False).add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False).add_field(name="usercount", value="Says how many users are inside of the server.", inline=False).add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False).add_field(name="guildstats", value="Showcases the guild's basic information. If the guild has an icon, the icon will be showcased too.", inline=False).add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False).add_field(name="8ball <message>", value="Speaks for itself.", inline=False).add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)
-                await channel.send(embed=embed_help)
-                await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
+            if message.content.startswith(f"{p}help"):
+                if not message.content.split(" ")[1:] or message.content.split(" ")[1:] == "1":
+                    embed_help1 = discord.Embed(title="Help Window 1/2", description=f"This bot's prefix is ``{p}``.", colour=0xFF00FF)\
+                        .set_thumbnail(url=message.author.avatar_url)\
+                        .set_footer(text="All commands HAVE to be lower-case!")\
+                        .set_author(name=message.author)\
+                        .add_field(name="suggest <message>", value="Suggests something to the bot owner!", inline=False)\
+                        .add_field(name="about", value="Basic/advanced information about the bot!")\
+                        .add_field(name="google <content>", value="Google something quickly! Will generate a link for you to open.")\
+                        .add_field(name="ping", value="Check the speed of the bot!", inline=False)\
+                        .add_field(name="usercount", value="Says how many users are inside of the server.", inline=False)\
+                        .add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False)
+                    await channel.send(embed=embed_help1)
+                    await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
+                elif message.content.split(" ")[1:] == "2":
+                    embed_help2 = discord.Embed(title="Help Window 2/2", description=f"This bot's prefix is ``{p}``.", colour=0xFF00FF)\
+                        .add_field(name="guildstats", value="Showcases the guild's basic information. If the guild has an icon, the icon will be showcased too.", inline=False) \
+                        .add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False)\
+                        .add_field(name="8ball <message>", value="Speaks for itself.", inline=False)\
+                        .add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)\
+                        .add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False)\
+                        .add_field(name="More coming soon...", value="Make sure to request more commands!", inline=False)
+                    await channel.send(embed=embed_help2)
 
             #Welcome Help Command
             if message.content == f"{p}help +welcome":
