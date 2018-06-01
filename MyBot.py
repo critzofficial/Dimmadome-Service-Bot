@@ -2,6 +2,7 @@
 #from typing import List
 
 import logging
+import traceback
 import hashlib
 import discord
 import sys
@@ -881,35 +882,48 @@ class MyClient(discord.Client):
 
             #Create Role Command
             if message.content.startswith(f"{p}createrole"):
-                if message.author.id == ownerID:
-                    if message.author.guild_permissions.manage_roles:
+                if message.author.guild_permissions.manage_roles:
+                    if message.author.id == ownerID:
+                        #If there is a name at all specified.
                         if len(message.content[13:]) > 0:
                             roleName = "".join(message.content.split("-")[1])
+                            #Are there permissions specified?
                             if len(message.content[len(f"{p}createrole-{roleName}-"):]) > 0:
                                 if len(message.content.split("-")[2]) > 0 and (message.content.split("-")[2].isdigit()):
                                     rolePerms = discord.Permissions(permissions=int("".join(message.content.split("-")[2])))
                             else:
                                 rolePerms = discord.Permissions()
+                            #Is there a color given?
                             if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-"):]) > 0:
                                 if len(message.content.split("-")[3]) > 0:
-                                    roleColor = "".join(message.content.split("-")[3])
+                                    roleColorRaw = int("".join(message.content.split("-")[3]), 16)
+                                    roleColor = discord.Color(value=roleColorRaw)
                             else:
                                 roleColor = discord.Color(value=0x000000)
+                            #Is there the "hoist" (split from other users) specified?
                             if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-"):]) > 0:
-                                if len(message.content.split("-")[4]) > 0 and (message.content.split("-")[4] == "True"):
+                                if "".join(message.content.split("-")[4]) == "True":
+                                    roleHoistRaw = "True"
                                     roleHoist = True
-                                elif len(message.content.split("-")[4]) > 0 and (message.content.split("-")[4] == "False"):
+                                elif "".join(message.content.split("-")[4]) == "False":
+                                    roleHoistRaw = "False"
                                     roleHoist = False
                             else:
+                                roleHoistRaw = "False"
                                 roleHoist = False
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-"):]) > 0:
-                                if len(message.content.split("-")[5]) > 0 and (message.content.split("-")[5] == "True"):
+                            #Is the role mentionable?
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoistRaw}-"):]) > 0:
+                                if "".join(message.content.split("-")[5]) == "True":
+                                    roleMentionableRaw = "True"
                                     roleMentionable = True
-                                elif len(message.content.split("-")[5]) > 0 and (message.content.split("-")[5] == "False"):
+                                elif "".join(message.content.split("-")[5]) == "False":
+                                    roleMentionableRaw = "False"
                                     roleMentionable = False
                             else:
+                                roleMentionableRaw = "False"
                                 roleMentionable = False
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-{roleMentionable}-"):]) > 0:
+                            #Reason? (Audit Log, fully optional)
+                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-{roleMentionableRaw}-"):]) > 0:
                                 if len(message.content.split("-")[6:]) > 0:
                                     roleReasonRaw = "".join(message.content.split("-")[6:])
                                     roleReason = f"Made by {message.author.name} - {roleReasonRaw}"
@@ -920,14 +934,13 @@ class MyClient(discord.Client):
                                 await message.add_reaction(emoji="\N{WHITE HEAVY CHECK MARK}")
                             except Exception as e:
                                 await channel.send(f"```Whoops! An error occured while creating the role.\n{e.__class__.__name__} : {e}```")
-                                print(e)
                                 await message.add_reaction(emoji="\N{NO ENTRY}")
-                else:
-                    await channel.send(":exclamation: - This is a command under development, thou shall not pass!")
+                    else:
+                        await channel.send(":interrobang: - This command is under development! Thou shall not pass!")
 
             #Help Command
             if message.content.startswith(f"{p}help"):
-                if not message.content.split(" ")[1:] or message.content.split(" ")[1:] == "1":
+                if not bool(message.content[8:]) or message.content[8:] == "1":
                     embed_help1 = discord.Embed(title="Help Window 1/2", description=f"This bot's prefix is ``{p}``.", colour=0xFF00FF)\
                         .set_thumbnail(url=message.author.avatar_url)\
                         .set_footer(text="All commands HAVE to be lower-case!")\
@@ -940,15 +953,20 @@ class MyClient(discord.Client):
                         .add_field(name="userstats [mention or ID of user]", value="Gives the statuses of a user, either by ID or by mention. If no one is mentioned, the author's statuses get shown.", inline=False)
                     await channel.send(embed=embed_help1)
                     await channel.send(f"If you want to see the admin commands of this bot, use ``{p}help +admin``!\nThis bot also has a ``@everyone`` filter! Make sure to use ``{p}help +everyone`` to see how it works!\nDid you know, this bot has a tags feature! Do ``{p}help +tags`` to see how it works!\nLastly, the bot has a welcome feature! Make sure to check it using ``{p}help +welcome``!")
-                elif message.content.split(" ")[1:] == "2":
+                elif message.content[8:] == "2":
                     embed_help2 = discord.Embed(title="Help Window 2/2", description=f"This bot's prefix is ``{p}``.", colour=0xFF00FF)\
                         .add_field(name="guildstats", value="Showcases the guild's basic information. If the guild has an icon, the icon will be showcased too.", inline=False) \
                         .add_field(name="dice", value="Rolls a number between 1 and 6.", inline=False)\
                         .add_field(name="8ball <message>", value="Speaks for itself.", inline=False)\
                         .add_field(name="testlog", value="Shows the log channel of the guild, if defined.", inline=False)\
                         .add_field(name="rand <number>", value="Randomizes a number between 1 and the number input.", inline=False)\
+                        .add_field(name="createrole-<name>-[permissions]-[hex]-[hoist]-[mentionable]-[reason]", value="Creates a role with the values specified. Order must be kept as it is here.\nFor the full documentation, use ``DD!help +role`` .")\
                         .add_field(name="More coming soon...", value="Make sure to request more commands!", inline=False)
                     await channel.send(embed=embed_help2)
+
+            #Role Help Command
+            if message.content == f"{p}help +role":
+                await channel.send("This command quickly explains the usage of ``DD!createrole``.\nUnlike other commands and bots, this command splits arguments using the dash/minus symbol (``-``). The argument order can't be changed and the name is *essential*, so make sure to fill everything up!\nRequired permissions are **manage_roles** .\n\n\"Name\": The name for the role. **This is the only required argument. All others are purely optional.**\n\"Permissions\": The permissions for the role. Please use the permissions calculator in order to define the permissions, else, type \"0\" here.\n\"Hex\": The color to give the role. Use a simple HEX calculator.\n\"Hoist\": Defines if the role should be *hoist* or not. **Hoist** means that users with this role will be seperated from other members in the member list. **Only 'True' and 'False' are accepted here.**\n\"Mentionable\": Defines if the role can be mentioned. **Only 'True' and 'False' are accepted here.**\n\"Reason\": The reason why the role is created. This is used for the audit logs and does not affect the role itself. This is entirely optional.")
 
             #Welcome Help Command
             if message.content == f"{p}help +welcome":
