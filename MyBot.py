@@ -883,60 +883,57 @@ class MyClient(discord.Client):
             #Create Role Command
             if message.content.startswith(f"{p}createrole"):
                 if message.author.guild_permissions.manage_roles:
-                    if message.author.id == ownerID:
-                        #If there is a name at all specified.
-                        if len(message.content[13:]) > 0:
-                            roleName = "".join(message.content.split("-")[1])
-                            #Are there permissions specified?
-                            if len(message.content[len(f"{p}createrole-{roleName}-"):]) > 0:
-                                if len(message.content.split("-")[2]) > 0 and (message.content.split("-")[2].isdigit()):
-                                    rolePerms = discord.Permissions(permissions=int("".join(message.content.split("-")[2])))
-                            else:
-                                rolePerms = discord.Permissions()
-                            #Is there a color given?
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-"):]) > 0:
-                                if len(message.content.split("-")[3]) > 0:
-                                    roleColorRaw = int("".join(message.content.split("-")[3]), 16)
-                                    roleColor = discord.Color(value=roleColorRaw)
-                            else:
-                                roleColor = discord.Color(value=0x000000)
-                            #Is there the "hoist" (split from other users) specified?
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-"):]) > 0:
-                                if "".join(message.content.split("-")[4]) == "True":
-                                    roleHoistRaw = "True"
-                                    roleHoist = True
-                                elif "".join(message.content.split("-")[4]) == "False":
-                                    roleHoistRaw = "False"
-                                    roleHoist = False
-                            else:
-                                roleHoistRaw = "False"
-                                roleHoist = False
-                            #Is the role mentionable?
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoistRaw}-"):]) > 0:
-                                if "".join(message.content.split("-")[5]) == "True":
-                                    roleMentionableRaw = "True"
-                                    roleMentionable = True
-                                elif "".join(message.content.split("-")[5]) == "False":
-                                    roleMentionableRaw = "False"
-                                    roleMentionable = False
-                            else:
-                                roleMentionableRaw = "False"
-                                roleMentionable = False
-                            #Reason? (Audit Log, fully optional)
-                            if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-{roleMentionableRaw}-"):]) > 0:
-                                if len(message.content.split("-")[6:]) > 0:
-                                    roleReasonRaw = "".join(message.content.split("-")[6:])
-                                    roleReason = f"Made by {message.author.name} - {roleReasonRaw}"
-                            else:
-                                roleReason = f"Made by {message.author.name} - No reason specified."
-                            try:
-                                await message.guild.create_role(name=roleName, permissions=rolePerms, color=roleColor, hoist=roleHoist, mentionable=roleMentionable, reason=roleReason)
-                                await message.add_reaction(emoji="\N{WHITE HEAVY CHECK MARK}")
-                            except Exception as e:
-                                await channel.send(f"```Whoops! An error occured while creating the role.\n{e.__class__.__name__} : {e}```")
-                                await message.add_reaction(emoji="\N{NO ENTRY}")
-                    else:
-                        await channel.send(":interrobang: - This command is under development! Thou shall not pass!")
+                    try:
+	                    #If there is a name at all specified.
+	                    if len(message.content[13:]) > 0:
+	                        roleName = "".join(message.content.split("-")[1])
+	                        #Are there permissions specified?
+	                        if len(message.content[len(f"{p}createrole-{roleName}-"):]) > 0:
+	                            if len(message.content.split("-")[2]) > 0 and (message.content.split("-")[2].isdigit()):
+	                                rolePerms = discord.Permissions(permissions=int("".join(message.content.split("-")[2])))
+	                        else:
+	                            rolePerms = discord.Permissions()
+	                        #Is there a color given?
+	                        if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-"):]) > 0:
+	                            if len(message.content.split("-")[3]) > 0:
+	                                roleColorRaw = int("".join(message.content.split("-")[3]), 16)
+	                                roleColor = discord.Color(value=roleColorRaw)
+	                        else:
+	                            roleColor = discord.Color(value=0x000000)
+	                        #Is there the "hoist" (split from other users) specified?
+	                        if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-"):]) > 0:
+	                            if "".join(message.content.split("-")[4]) == "True":
+	                                roleHoistRaw = "True"
+	                                roleHoist = True
+	                            elif "".join(message.content.split("-")[4]) == "False":
+	                                roleHoistRaw = "False"
+	                                roleHoist = False
+	                        else:
+	                            roleHoistRaw = "False"
+	                            roleHoist = False
+	                        #Is the role mentionable?
+	                        if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoistRaw}-"):]) > 0:
+	                            if "".join(message.content.split("-")[5]) == "True":
+	                                roleMentionableRaw = "True"
+	                                roleMentionable = True
+	                            elif "".join(message.content.split("-")[5]) == "False":
+	                                roleMentionableRaw = "False"
+	                                roleMentionable = False
+	                        else:
+	                            roleMentionableRaw = "False"
+	                            roleMentionable = False
+	                        #Reason? (Audit Log, fully optional)
+	                        if len(message.content[len(f"{p}createrole-{roleName}-{rolePerms}-{roleColor}-{roleHoist}-{roleMentionableRaw}-"):]) > 0:
+	                            if len(message.content.split("-")[6:]) > 0:
+	                                roleReasonRaw = "".join(message.content.split("-")[6:])
+	                                roleReason = f"Made by {message.author.name} - {roleReasonRaw}"
+	                            else:
+	                                roleReason = f"Made by {message.author.name} - No reason specified."
+	                                await message.guild.create_role(name=roleName, permissions=rolePerms, color=roleColor, hoist=roleHoist, mentionable=roleMentionable, reason=roleReason)
+	                                await message.add_reaction(emoji="\N{WHITE HEAVY CHECK MARK}")
+                    except Exception as e:
+                        await channel.send(f"```Whoops! An error occured while creating the role.\n{e.__class__.__name__} : {e}```")
+                        await message.add_reaction(emoji="\N{NO ENTRY}")
 
             #Help Command
             if message.content.startswith(f"{p}help"):
