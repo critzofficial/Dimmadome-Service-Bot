@@ -4,7 +4,7 @@ import sys, traceback
 
 bot = commands.Bot(command_prefix='DDT!')
 
-initial_extensions = ["Utility", "Owner"]
+initial_extensions = ["Utility", "Owner", "Admin"]
 
 @bot.command(hidden=True)
 @commands.is_owner()

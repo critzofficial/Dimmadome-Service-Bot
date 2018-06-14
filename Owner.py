@@ -1,5 +1,7 @@
 from discord.ext import commands
 import discord
+import textwrap
+import traceback
 
 ownerID = 255802794244571136
 
@@ -7,6 +9,17 @@ class Owner:
 
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    @commands.is_owner()
+    async def eval(self, ctx, *, body):
+        to_exec = textwrap.indent(body, "  ")
+        try:
+            exec(f"async def func(ctx):\n\t{to_exec}", globals())
+            await func(ctx)
+        except Exception as e:
+            await ctx.send(f"```{e.__class__.__name__}: {e}```")
+            traceback.print_exc()
 
     #---QUIT---#
     @commands.command(description="Logs the bot out of discord.\nRequired permissions: Bot ownership")

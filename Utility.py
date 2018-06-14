@@ -2,7 +2,6 @@ from discord.ext import commands
 import discord
 import random
 import time
-import sys
 import hashlib
 
 ownerID = 255802794244571136
