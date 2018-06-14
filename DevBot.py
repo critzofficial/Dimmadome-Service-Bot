@@ -45,6 +45,11 @@ async def reloadext(ctx, extension):
 
 @bot.event
 @asyncio.coroutine
+async def on_ready():
+    print("Ready to go!")
+
+@bot.event
+@asyncio.coroutine
 async def on_command_error(ctx, error):
     await ctx.send(f":interrobang: Something went wrong with the command you used. An error has been raised!\nThe error is: {error}")
 

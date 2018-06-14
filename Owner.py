@@ -10,9 +10,19 @@ class Owner:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+
+    #---ODISMISS---#
+    @commands.command(description="Makes the bot leave the server. This is the owner variant.\nRequired permissions: bot ownership")
+    @commands.is_owner()
+    async def odismiss(self, ctx):
+        """Make me leave. :["""
+        await ctx.guild.leave()
+
+    #---EVAL---#
+    @commands.command(description="Okay, fine. This fine command runs anything the bot owner wants it to run. Of course, only the bot owner can use it. :)")
     @commands.is_owner()
     async def eval(self, ctx, *, body):
+        """Do I have to explain?"""
         to_exec = textwrap.indent(body, "  ")
         try:
             exec(f"async def func(ctx):\n\t{to_exec}", globals())
