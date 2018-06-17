@@ -1,15 +1,33 @@
 from discord.ext import commands
+import discord
 import asyncio
 import sys, traceback
+import fs
 
-bot = commands.Bot(command_prefix='DDT!')
+description = """Welcome to the help section of Dimmadome Service Bot!
 
-initial_extensions = ["Utility", "Owner", "Admin"]
+All I can really say here is that you should check each command category/usage before using anything. There are some twists that I can't change, unfortunately."""
+
+bot = commands.Bot(command_prefix='DD!', description=description)
+
+initial_extensions = ["Utility", "Owner", "Admin", "Tags"]
+
+@bot.command(hidden=True)
+@commands.is_owner()
+async def restartbot(ctx):
+	try:
+		for extension in initial_extensions:
+			bot.unload_extension(extension)
+			bot.load_extension(extension)
+		await ctx.send("Bot successfully restarted the extensions.")
+	except Exception as e:
+		print(f'Failed to load extension {extension}.', file=sys.stderr)
+		traceback.print_exc()
 
 @bot.command(hidden=True)
 @commands.is_owner()
 async def loadext(ctx, extension):
-    if extension in initial_extensions:
+    if fs.exists(extension + ".py"):
         try:
             bot.load_extension(extension)
             await ctx.send(f"Extension {extension} successfully loaded.")
@@ -21,7 +39,7 @@ async def loadext(ctx, extension):
 @bot.command(hidden=True)
 @commands.is_owner()
 async def unloadext(ctx, extension):
-    if extension in initial_extensions:
+    if fs.exists(extension + ".py"):
         try:
             bot.unload_extension(extension)
             await ctx.send(f"Extension {extension} successfully unloaded.")
@@ -33,13 +51,13 @@ async def unloadext(ctx, extension):
 @bot.command(hidden=True)
 @commands.is_owner()
 async def reloadext(ctx, extension):
-    if extension in initial_extensions:
+    if fs.exists(extension + ".py"):
         try:
             bot.unload_extension(extension)
             bot.load_extension(extension)
-            await ctx.send(f"Extension {extension} successfully restarted.")
+            await ctx.send(f"Extension {extension} successfully reloaded.")
         except Exception as e:
-            await ctx.send(f"Extension {extension} failed to restart. Reason: ``{e.__class__.__name__}: {e}``")
+            await ctx.send(f"Extension {extension} failed to reload. Reason: ``{e.__class__.__name__}: {e}``")
     else:
         await ctx.send(f"Extension {extension} invalid.")
 
@@ -47,6 +65,7 @@ async def reloadext(ctx, extension):
 @asyncio.coroutine
 async def on_ready():
     print("Ready to go!")
+    await bot.change_presence(activity=discord.Game(name="| DD!help |"))
 
 @bot.event
 @asyncio.coroutine
@@ -60,5 +79,5 @@ for extension in initial_extensions:
         print(f'Failed to load extension {extension}.', file=sys.stderr)
         traceback.print_exc()
 
-with open("DEVTOKEN.txt", "r") as auth:
+with open("TOKEN.txt", "r") as auth:
     bot.run(auth.read())

@@ -115,8 +115,8 @@ class MyClient(discord.Client):
 
             # Log Check
             try:
-                file = open(f"../DSB_Files/log_of_{message.guild.id}.txt", "r+")
-                logID = file.read()
+                with open(f"../DSB_Files/log_of_{message.guild.id}.txt", "r+") as file:
+                    logID = file.read()
                 log_channel = self.get_channel(int(logID))
             except:
                 log_channel = message.channel
@@ -1199,5 +1199,5 @@ class MyClient(discord.Client):
 
 
 client = MyClient()
-with open('TOKEN.txt', 'r') as auth:
+with open('DEVTOKEN.txt', 'r') as auth:
     client.run(auth.read())
