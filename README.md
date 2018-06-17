@@ -4,8 +4,6 @@ Firstly, I want to say that you should look at the commands *before* inviting my
 
 Now, about the permissions my bot (currently) needs:
 
-**Manage Roles** - The bot has an automatic feature where it tries to add the *DSB Muted* role, in order to make the mute/unmute commands work as expected. If you choose to NOT give the bot this permission, the mute commands will be not working, unless you reinvite the bot or add the role yourself.
-
 **Kick/Ban Members** - The bot also is in power of kicking or banning users in various ways. Many of them are based off of filters, but there are direct kick and ban commands at hand too. Simply use *DD!kick* or *DD!ban* to make the job easier. If the bot lacks the permissions to do so, it will be aborted.
 
 **Send/Manage Messages** - Some commands instantly delete the user's message once a special command is recognized. This is mostly used for owner/admin commands. Please make sure to check this. It will do no harm. Disabling this will also render the *DD!purge* command useless.
