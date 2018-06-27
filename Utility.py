@@ -1,10 +1,10 @@
 from discord.ext import commands
 import discord
-import random
 import time
 import hashlib
 
 ownerID = 255802794244571136
+
 
 class Utility:
 	"""This category is all about any kind of commands that couldn't fit in other categories. In other words, here go commands that anyone can use!"""
@@ -12,18 +12,8 @@ class Utility:
 	def __init__(self, bot):
 		self.bot = bot
 
-	#---RAND---#
-	@commands.command(description="Gives a round number between the first and the second number. Simple, eh?")
-	async def rand(self, ctx, num1, num2):
-		"""Randomizes 2 numbers!"""
-		try:
-			numproduced = random.randint(int(num1), int(num2))
-			await ctx.send(f"Your number is {numproduced} !")
-		except Exception as e:
-			await ctx.send(f"```Oops, an error has been raised!\nThe error is: {e.__class__.__name__}: {e}```")
-    
 	#---PING---#
-	@commands.command(description="Checks the latency of the bot in 'ms'. The lower the latency, the faster the bot replies on commands.", aliases=["p"])
+	@commands.command(aliases=["p"])
 	async def ping(self, ctx):
 		"""Check the speed of me!"""
 		current_time = int(round(time.time() * 1000))
@@ -35,38 +25,30 @@ class Utility:
 	#---SUGGEST---#
 	@commands.command()
 	async def suggest(self, ctx, *, suggestion):
-		"""Suggest something to the owner!"""
+		"""Suggest something to the owner!
+		
+		Parameters:
+			suggestion - What you suggest goes here. It will be sent to the owner *pronto*!"""
 		suggch = self.bot.get_channel(454695415611260928)
 		await suggch.send(f"{ctx.author.name} ``{ctx.author.id}`` from {ctx.guild.name} ``{ctx.guild.id}`` suggested: ``{suggestion}``")
 
 	#---GOOGLE---#
-	@commands.command(description="This app doesn't use any Google API. Instead, it just adds the keywords to the link.", aliases=["search", "g"])
+	@commands.command(hidden=True, aliases=["search", "g"])
 	async def google(self, ctx, *, msg):
-		"""Google something!"""
+		"""Google something!
+		
+		Parameters:
+			msg - The content to google."""
 		rawmsg = "+".join(msg.split(" "))
 		await ctx.send(embed=discord.Embed(title="Google Search", description=f"Search Content: {msg}\nClick [here](https://www.google.com/search?q={rawmsg}) to access your generated link.", color=int(hashlib.md5(msg.encode('utf-8')).hexdigest()[:6], 16)))
 
-	#---ASKTHE8BALL---#
-	@commands.command(description="A simple randomizer of words. Nothing more to it.", aliases=["8ball"])
-	async def askthe8ball(self, ctx):
-		"""Ask the 8-ball!"""
-		eightball = [
-			"Yes",
-			"As I see it, yes",
-			"Outlook good",
-			"Concentrate and ask again",
-			"Better not tell you now",
-			"Don't count on it",
-			"Very doubtful",
-			"No"
-		]
-		eightballsays = random.randint(1, 9)
-		await ctx.send(eightball[eightballsays - 1])
-
 	#---USERSTATS---#
-	@commands.command(description="Shows information, as the roles, date of when the user joined the server, date when the account got created as well as other basic information.", aliases=["uinfo", "ustats"])
-	async def userstats(self, ctx, user: discord.Member=None):
-		"""Shows information about the mentioned user!"""
+	@commands.command(aliases=["uinfo", "ustats"])
+	async def userstats(self, ctx, user: discord.Member):
+		"""Shows information about the mentioned user!
+		
+		Parameters:
+			user - The user to get the statuses from. The user must be mentioned."""
 		if user == None:
 			await ctx.send("Please mention someone!")
 		else:
@@ -95,7 +77,7 @@ class Utility:
 			await ctx.send(embed=embed_userstats)
 
 	#---ABOUT---#
-	@commands.command(description="Names a few details about the bot... That's it.")
+	@commands.command()
 	async def about(self, ctx):
 		"""Something about me!"""
 		botOwner = await self.bot.get_user_info(user_id=ownerID)
@@ -111,6 +93,7 @@ class Utility:
 			numOfMembers += len(guild.members)
 		embed_about.add_field(name="Number of members I serve in total", value=numOfMembers, inline=False)
 		await ctx.send(embed=embed_about)
+
 
 def setup(bot):
 	bot.add_cog(Utility(bot))
