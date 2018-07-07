@@ -23,11 +23,8 @@ class Owner:
 		Requirements:
 			Bot ownership"""
 		to_exec = textwrap.indent(body, "  ")
-		try:
-			exec(f"async def func(ctx):\n\t{to_exec}", globals())
-			await func(ctx)
-		except Exception as e:
-			await ctx.send(f"```{e.__class__.__name__}: {e}```")
+		exec(f"async def func(ctx):\n\t{to_exec}", globals())
+		await func(ctx)
 
 	#---QUIT---#
 	@commands.command()

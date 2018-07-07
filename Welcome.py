@@ -63,6 +63,7 @@ class Welcome:
 		
 	#---SETWELCOME---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def setwelcome(self, ctx, channel: discord.TextChannel, *, message: str):
 		"""Sets the welcome channel and message!
 		
@@ -71,62 +72,62 @@ class Welcome:
 		Parameters:
 			channel - The channel to use. The channel must be mentioned. (e.g. #general)
 			message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/welcome.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
-			with open("../DSB_Files/welcome.json", "w") as filetowrite:
-				json.dump(srvdict, filetowrite)
-			await ctx.send(":white_check_mark: - Welcome message and channel set!")
+		with open("../DSB_Files/welcome.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
+		with open("../DSB_Files/welcome.json", "w") as filetowrite:
+			json.dump(srvdict, filetowrite)
+		await ctx.send(":white_check_mark: - Welcome message and channel set!")
 		
 	#---TESTWELCOME---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def testwelcome(self, ctx):
 		"""Tests the welcome channel and message!
 		
 		The bot must have access to send in the specific channel at *all* times."""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/welcome.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			if not str(ctx.guild.id) in srvdict:
-				await ctx.send(":interrobang: - Your server has no welcome settings defined!")
-			else:
-				channelID = int(srvdict[str(ctx.guild.id)]["chID"])
-				channel = self.bot.get_channel(channelID)
-				msg = srvdict[str(ctx.guild.id)]["msg"]
-				if "{USERNAME}" in msg:
-					msg = msg.replace("{USERNAME}", ctx.author.display_name)
-				if "{USERID}" in msg:
-					msg = msg.replace("{USERID}", str(ctx.author.id))
-				if "{MENTION}" in msg:
-					msg = msg.replace("{MENTION}", f"<@{ctx.author.id}>")
-				if "{SRVNAME}" in msg:
-					msg = msg.replace("{SRVNAME}", ctx.guild.name)
-				if "{SRVID}" in msg:
-					msg = msg.replace("{SRVID}", str(ctx.guild.id))
-				if "{SRVCOUNT}" in msg:
-					msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
-				await channel.send(msg)
+		with open("../DSB_Files/welcome.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		if not str(ctx.guild.id) in srvdict:
+			await ctx.send(":interrobang: - Your server has no welcome settings defined!")
+		else:
+			channelID = int(srvdict[str(ctx.guild.id)]["chID"])
+			channel = self.bot.get_channel(channelID)
+			msg = srvdict[str(ctx.guild.id)]["msg"]
+			if "{USERNAME}" in msg:
+				msg = msg.replace("{USERNAME}", ctx.author.display_name)
+			if "{USERID}" in msg:
+				msg = msg.replace("{USERID}", str(ctx.author.id))
+			if "{MENTION}" in msg:
+				msg = msg.replace("{MENTION}", f"<@{ctx.author.id}>")
+			if "{SRVNAME}" in msg:
+				msg = msg.replace("{SRVNAME}", ctx.guild.name)
+			if "{SRVID}" in msg:
+				msg = msg.replace("{SRVID}", str(ctx.guild.id))
+			if "{SRVCOUNT}" in msg:
+				msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
+			await channel.send(msg)
 	
 	#---DELWELCOME---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def delwelcome(self, ctx):
 		"""Deletes the welcome settings for this guild.
 		
 		Both channel and message will get deleted."""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/welcome.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			if not str(ctx.guild.id) in srvdict:
-				await ctx.send(":interrobang: - Your server has no welcome settings defined!")
-			else:
-				del srvdict[str(ctx.guild.id)]
-				with open("../DSB_Files/welcome.json", "w") as filetowrite:
-					json.dump(srvdict, filetowrite)
-				await ctx.send(":white_check_mark: - Welcome settings deleted!")
+		with open("../DSB_Files/welcome.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		if not str(ctx.guild.id) in srvdict:
+			await ctx.send(":interrobang: - Your server has no welcome settings defined!")
+		else:
+			del srvdict[str(ctx.guild.id)]
+			with open("../DSB_Files/welcome.json", "w") as filetowrite:
+				json.dump(srvdict, filetowrite)
+			await ctx.send(":white_check_mark: - Welcome settings deleted!")
 				
 	#---SETLEAVE---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def setleave(self, ctx, channel: discord.TextChannel, *, message: str):
 		"""Sets the leave channel and message!
 		
@@ -135,57 +136,56 @@ class Welcome:
 		Parameters:
 			channel - The channel to use. The channel must be mentioned. (e.g. #general)
 			message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/leave.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
-			with open("../DSB_Files/leave.json", "w") as filetowrite:
-				json.dump(srvdict, filetowrite)
-			await ctx.send(":white_check_mark: - Leave message and channel set!")
+		with open("../DSB_Files/leave.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
+		with open("../DSB_Files/leave.json", "w") as filetowrite:
+			json.dump(srvdict, filetowrite)
+		await ctx.send(":white_check_mark: - Leave message and channel set!")
 		
 	#---TESTLEAVE---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def testleave(self, ctx):
 		"""Tests the leave channel and message!
 		
 		The bot must have access to send in the specific channel at *all* times."""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/leave.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			if not str(ctx.guild.id) in srvdict:
-				await ctx.send(":interrobang: - Your server has no leave settings defined!")
-			else:
-				channelID = int(srvdict[str(ctx.guild.id)]["chID"])
-				channel = self.bot.get_channel(channelID)
-				msg = srvdict[str(ctx.guild.id)]["msg"]
-				if "{USERNAME}" in msg:
-					msg = msg.replace("{USERNAME}", ctx.author.display_name)
-				if "{USERID}" in msg:
-					msg = msg.replace("{USERID}", str(ctx.author.id))
-				if "{SRVNAME}" in msg:
-					msg = msg.replace("{SRVNAME}", ctx.guild.name)
-				if "{SRVID}" in msg:
-					msg = msg.replace("{SRVID}", str(ctx.guild.id))
-				if "{SRVCOUNT}" in msg:
-					msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
-				await channel.send(msg)
+		with open("../DSB_Files/leave.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		if not str(ctx.guild.id) in srvdict:
+			await ctx.send(":interrobang: - Your server has no leave settings defined!")
+		else:
+			channelID = int(srvdict[str(ctx.guild.id)]["chID"])
+			channel = self.bot.get_channel(channelID)
+			msg = srvdict[str(ctx.guild.id)]["msg"]
+			if "{USERNAME}" in msg:
+				msg = msg.replace("{USERNAME}", ctx.author.display_name)
+			if "{USERID}" in msg:
+				msg = msg.replace("{USERID}", str(ctx.author.id))
+			if "{SRVNAME}" in msg:
+				msg = msg.replace("{SRVNAME}", ctx.guild.name)
+			if "{SRVID}" in msg:
+				msg = msg.replace("{SRVID}", str(ctx.guild.id))
+			if "{SRVCOUNT}" in msg:
+				msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
+			await channel.send(msg)
 	
 	#---DELLEAVE---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def delleave(self, ctx):
 		"""Deletes the leave settings for this guild.
 		
 		Both channel and message will get deleted."""
-		if ctx.author.guild_permissions.administrator:
-			with open("../DSB_Files/leave.json", "r") as filetoread:
-				srvdict = json.load(filetoread)
-			if not str(ctx.guild.id) in srvdict:
-				await ctx.send(":interrobang: - Your server has no welcome settings defined!")
-			else:
-				del srvdict[str(ctx.guild.id)]
-				with open("../DSB_Files/leave.json", "w") as filetowrite:
-					json.dump(srvdict, filetowrite)
-				await ctx.send(":white_check_mark: - Leave settings deleted!")				
+		with open("../DSB_Files/leave.json", "r") as filetoread:
+			srvdict = json.load(filetoread)
+		if not str(ctx.guild.id) in srvdict:
+			await ctx.send(":interrobang: - Your server has no welcome settings defined!")
+		else:
+			del srvdict[str(ctx.guild.id)]
+			with open("../DSB_Files/leave.json", "w") as filetowrite:
+				json.dump(srvdict, filetowrite)
+			await ctx.send(":white_check_mark: - Leave settings deleted!")
 
 
 def setup(bot):

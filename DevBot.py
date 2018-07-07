@@ -1,7 +1,8 @@
 from discord.ext import commands
 import discord
 import asyncio
-import sys, traceback
+import sys
+import traceback
 import fs
 
 description = """Welcome to the help section of Dimmadome Service Bot!
@@ -19,53 +20,53 @@ initial_extensions = ["Utility", "Owner", "Admin", "Welcome"]
 @commands.is_owner()
 async def restartbot(ctx):
     try:
-        for extension in initial_extensions:
-            bot.unload_extension(extension)
-            bot.load_extension(extension)
+        for ext in initial_extensions:
+            bot.unload_extension(ext)
+            bot.load_extension(ext)
         await ctx.send("Bot successfully restarted the extensions.")
-    except Exception as e:
-        print(f'Failed to load extension {extension}.', file=sys.stderr)
+    except Exception as err:
+        print(f'Failed to load extension {ext}. Reason: ``{err.__class__.__name__}: {err}``', file=sys.stderr)
         traceback.print_exc()
 
 
 @bot.command(hidden=True)
 @commands.is_owner()
-async def loadext(ctx, extension):
-    if fs.exists(extension + ".py"):
+async def loadext(ctx, ext):
+    if fs.exists(ext + ".py"):
         try:
-            bot.load_extension(extension)
-            await ctx.send(f"Extension {extension} successfully loaded.")
-        except Exception as e:
-            await ctx.send(f"Extension {extension} failed to load. Reason: ``{e.__class__.__name__}: {e}``")
+            bot.load_extension(ext)
+            await ctx.send(f"Extension {ext} successfully loaded.")
+        except Exception as err:
+            await ctx.send(f"Extension {ext} failed to load. Reason: ``{err.__class__.__name__}: {err}``")
     else:
-        await ctx.send(f"Extension {extension} invalid.")
+        await ctx.send(f"Extension {ext} invalid.")
 
 
 @bot.command(hidden=True)
 @commands.is_owner()
-async def unloadext(ctx, extension):
-    if fs.exists(extension + ".py"):
+async def unloadext(ctx, ext):
+    if fs.exists(ext + ".py"):
         try:
-            bot.unload_extension(extension)
-            await ctx.send(f"Extension {extension} successfully unloaded.")
-        except Exception as e:
-            await ctx.send(f"Extension {extension} failed to unload. Reason: ``{e.__class__.__name__}: {e}``")
+            bot.unload_extension(ext)
+            await ctx.send(f"Extension {ext} successfully unloaded.")
+        except Exception as err:
+            await ctx.send(f"Extension {ext} failed to unload. Reason: ``{err.__class__.__name__}: {err}``")
     else:
-        await ctx.send(f"Extension {extension} invalid.")
+        await ctx.send(f"Extension {ext} invalid.")
 
 
 @bot.command(hidden=True)
 @commands.is_owner()
-async def reloadext(ctx, extension):
-    if fs.exists(extension + ".py"):
+async def reloadext(ctx, ext):
+    if fs.exists(ext + ".py"):
         try:
-            bot.unload_extension(extension)
-            bot.load_extension(extension)
-            await ctx.send(f"Extension {extension} successfully reloaded.")
-        except Exception as e:
-            await ctx.send(f"Extension {extension} failed to reload. Reason: ``{e.__class__.__name__}: {e}``")
+            bot.unload_extension(ext)
+            bot.load_extension(ext)
+            await ctx.send(f"Extension {ext} successfully reloaded.")
+        except Exception as err:
+            await ctx.send(f"Extension {ext} failed to reload. Reason: ``{err.__class__.__name__}: {err}``")
     else:
-        await ctx.send(f"Extension {extension} invalid.")
+        await ctx.send(f"Extension {ext} invalid.")
 
 
 @bot.event

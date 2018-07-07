@@ -30,7 +30,10 @@ class Utility:
 		Parameters:
 			suggestion - What you suggest goes here. It will be sent to the owner *pronto*!"""
 		suggch = self.bot.get_channel(454695415611260928)
-		await suggch.send(f"{ctx.author.name} ``{ctx.author.id}`` from {ctx.guild.name} ``{ctx.guild.id}`` suggested: ``{suggestion}``")
+		embed_suggest = discord.Embed(title=ctx.author.name, description=ctx.author.id, color=0x00FF00).set_thumbnail(url=ctx.author.avatar_url)
+		embed_suggest.add_field(name=ctx.guild.name, value=ctx.guild.id, inline=False)
+		embed_suggest.add_field(name="Suggestion", value=suggestion, inline=False)
+		await suggch.send(embed=embed_suggest)
 
 	#---GOOGLE---#
 	@commands.command(hidden=True, aliases=["search", "g"])
@@ -62,11 +65,9 @@ class Utility:
 			createDate = user.created_at
 			joinDate = user.joined_at
 			rolesStr = ", ".join(printedRoles)
-			if user.activity:
-				memActivity = user.activity.name
-			elif not user.activity:
-				memActivity = "None"
+			memActivity = user.activity.name if user.activity is not None else "None"
 			embed_userstats = discord.Embed(title="User Statistics", description=f"This embed will show some basic information about {user}!", color=0x0000FF)
+			embed_userstats.set_thumbnail(url=user.avatar_url)
 			embed_userstats.add_field(name="Username", value=user.display_name, inline=False)
 			embed_userstats.add_field(name="ID", value=user.id, inline=False)
 			embed_userstats.add_field(name="Nickname", value=user.nick, inline=False)
@@ -81,7 +82,6 @@ class Utility:
 	async def about(self, ctx):
 		"""Something about me!"""
 		botOwner = await self.bot.get_user_info(user_id=ownerID)
-		numOfMembers = 0
 		embed_about = discord.Embed(title="About", description=f"This embed will showcase all the information about {self.bot.user}!", color=0x00FF00)
 		embed_about.add_field(name="Username", value=self.bot.user.name, inline=False)
 		embed_about.add_field(name="ID", value=self.bot.user.id, inline=False)
@@ -89,9 +89,6 @@ class Utility:
 		embed_about.add_field(name="Library Version", value=discord.__version__, inline=False)
 		embed_about.add_field(name="My Owner", value=botOwner.name, inline=False)
 		embed_about.add_field(name="Number of servers I run in", value=len(self.bot.guilds), inline=False)
-		for guild in self.bot.guilds:
-			numOfMembers += len(guild.members)
-		embed_about.add_field(name="Number of members I serve in total", value=numOfMembers, inline=False)
 		await ctx.send(embed=embed_about)
 
 

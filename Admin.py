@@ -16,6 +16,7 @@ class Admin:
 
 	#---PURGE---#
 	@commands.command(aliases=["prune", "bulkdel"])
+	@commands.has_permissions(manage_messages=True)
 	async def purge(self, ctx, number: int):
 		"""Mass delete messages!
 		
@@ -28,12 +29,12 @@ class Admin:
 			
 		Permissions:
 			Manage messages"""
-		if ctx.author.guild_permissions.manage_messages:
-			numDel = await ctx.channel.purge(limit=number, bulk=True)
-			await ctx.send(f":white_check_mark: - Deleted {len(numDel)} messages!")
+		numDel = await ctx.channel.purge(limit=number, bulk=True)
+		await ctx.send(f":white_check_mark: - Deleted {len(numDel)} messages!")
 
 	#---SETLOG---#
 	@commands.command()
+	@commands.has_permissions(administrator=True)
 	async def setlog(self, ctx, channel: discord.TextChannel=None):
 		"""Sets the log channel.
 		
@@ -42,21 +43,19 @@ class Admin:
 			
 		Permissions:
 			Administrator"""
-		if ctx.author.guild_permissions.administrator:
-			if channel != None:
-				fs.write(f"../DSB_Files/log_of_{ctx.guild.id}.txt", str(channel.id))
-				await ctx.send(":white_check_mark: - Log Channel set!")
-			else:
-				if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
-					os.remove(f"../DSB_Files/log_of_{ctx.guild.id}.txt")
-					await ctx.send(":white_check_mark: - Log channel deleted out of memory!")
-				else:
-					await ctx.send(":interrobang: - Please mention a channel!")
+		if channel != None:
+			fs.write(f"../DSB_Files/log_of_{ctx.guild.id}.txt", str(channel.id))
+			await ctx.send(":white_check_mark: - Log Channel set!")
 		else:
-			await ctx.send(denied)
+			if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+				os.remove(f"../DSB_Files/log_of_{ctx.guild.id}.txt")
+				await ctx.send(":white_check_mark: - Log channel deleted out of memory!")
+			else:
+				await ctx.send(":interrobang: - Please mention a channel!")
 
 	#---KICK---#
 	@commands.command(aliases=["k"])
+	@commands.has_permissions(kick_members=True)
 	async def kick(self, ctx, member: discord.Member, *, reason: str=None):
 		"""Kicks a mentioned user from the current guild.
 		
@@ -66,43 +65,12 @@ class Admin:
 			
 		Permissions:
 			Kick members"""
-		if ctx.author.guild_permissions.kick_members:
-			if member != None:
-				await member.kick(reason=f"Kicked by {ctx.author}: {reason}")
-				await ctx.send(embed=discord.Embed(title=f"Kicked member {member}", description=f"Member {member} has been successfully kicked from this guild!", color=0xFF0000))
-				embed_kick = discord.Embed(title="Admin log: Member kick", description="A kick has been issued inside of this server.", color=0xFF0000)
-				embed_kick.add_field(name="Admin", value=ctx.author)
-				embed_kick.add_field(name="Kicked member", value=member)
-				embed_kick.add_field(name="Reason", value=reason, inline=False)
-				if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
-					with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
-						chID = file.read()
-					logch = self.bot.get_channel(int(chID))
-				else:
-					logch = ctx
-				await logch.send(embed=embed_kick)
-			else:
-				await ctx.send(":interrobang: - Please mention a member to kick!")
-		else:
-			await ctx.send(denied)
-
-	#---BAN---#
-	@commands.command(aliases=["b"])
-	async def ban(self, ctx, member: discord.Member, *, reason: str=None):
-		"""Bans a mentioned user from the current guild.
-		
-		Parameters:
-			member - The user to ban. The user must be mentioned.
-			reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
-			
-		Permissions:
-			Ban/Unban members"""
-		if ctx.author.guild_permissions.ban_members:
-			await member.ban(reason=f"Banned by {ctx.author}: {reason}")
-			await ctx.send(embed=discord.Embed(title=f"Banned member {member}", description=f"Member {member} has been successfully banned from this guild!", color=0xFF0000))
-			embed_kick = discord.Embed(title="Admin log: Member ban", description="A ban has been issued inside of this server.", color=0xFF0000)
+		if member != None:
+			await member.kick(reason=f"Kicked by {ctx.author}: {reason}")
+			await ctx.send(embed=discord.Embed(title=f"Kicked member {member}", description=f"Member {member} has been successfully kicked from this guild!", color=0xFF0000))
+			embed_kick = discord.Embed(title="Admin log: Member kick", description="A kick has been issued inside of this server.", color=0xFF0000)
 			embed_kick.add_field(name="Admin", value=ctx.author)
-			embed_kick.add_field(name="Banned member", value=member)
+			embed_kick.add_field(name="Kicked member", value=member)
 			embed_kick.add_field(name="Reason", value=reason, inline=False)
 			if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
 				with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
@@ -112,10 +80,37 @@ class Admin:
 				logch = ctx
 			await logch.send(embed=embed_kick)
 		else:
-			await ctx.send(denied)
+			await ctx.send(":interrobang: - Please mention a member to kick!")
+
+	#---BAN---#
+	@commands.command(aliases=["b"])
+	@commands.has_permissions(ban_members=True)
+	async def ban(self, ctx, member: discord.Member, *, reason: str=None):
+		"""Bans a mentioned user from the current guild.
+		
+		Parameters:
+			member - The user to ban. The user must be mentioned.
+			reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
+			
+		Permissions:
+			Ban/Unban members"""
+		await member.ban(reason=f"Banned by {ctx.author}: {reason}")
+		await ctx.send(embed=discord.Embed(title=f"Banned member {member}", description=f"Member {member} has been successfully banned from this guild!", color=0xFF0000))
+		embed_kick = discord.Embed(title="Admin log: Member ban", description="A ban has been issued inside of this server.", color=0xFF0000)
+		embed_kick.add_field(name="Admin", value=ctx.author)
+		embed_kick.add_field(name="Banned member", value=member)
+		embed_kick.add_field(name="Reason", value=reason, inline=False)
+		if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+			with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+				chID = file.read()
+			logch = self.bot.get_channel(int(chID))
+		else:
+			logch = ctx
+		await logch.send(embed=embed_kick)
 
 	#---UNBAN---#
 	@commands.command(aliases=["unban", "ub"])
+	@commands.has_permissions(ban_members=True)
 	async def pardon(self, ctx, memID: int, *, reason: str=None):
 		"""Unbans a banned user from the current guild.
 		
@@ -125,34 +120,33 @@ class Admin:
 			
 		Permissions:
 			Ban/Unban members"""
-		if ctx.author.guild_permissions.ban_members:
-			memObj = self.bot.get_user_info(user_id=int(memID))
-			await memObj.unban(reason=f"Unbanned by {ctx.author}: {reason}")
-			await ctx.send(embed=discord.Embed(title=f"Unbanned member {memObj.name}", description=f"Member {memObj.name} has been successfully unbanned from this guild!", color=0x00FF00))
-			embed_unban = discord.Embed(title="Admin log: Member unban", description="An unban has been issued inside of this server.", color=0x00FF00)
-			embed_unban.add_field(name="Admin", value=ctx.author)
-			embed_unban.add_field(name="Unbanned member", value=memObj)
-			embed_unban.add_field(name="Reason", value=reason, inline=False)
-			if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
-				with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
-					chID = file.read()
-				logch = self.bot.get_channel(int(chID))
-			else:
-				logch = ctx
-			logch.send(embed=embed_unban)
+		memObj = self.bot.get_user_info(user_id=int(memID))
+		await memObj.unban(reason=f"Unbanned by {ctx.author}: {reason}")
+		await ctx.send(embed=discord.Embed(title=f"Unbanned member {memObj.name}", description=f"Member {memObj.name} has been successfully unbanned from this guild!", color=0x00FF00))
+		embed_unban = discord.Embed(title="Admin log: Member unban", description="An unban has been issued inside of this server.", color=0x00FF00)
+		embed_unban.add_field(name="Admin", value=ctx.author)
+		embed_unban.add_field(name="Unbanned member", value=memObj)
+		embed_unban.add_field(name="Reason", value=reason, inline=False)
+		if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+			with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+				chID = file.read()
+			logch = self.bot.get_channel(int(chID))
+		else:
+			logch = ctx
+		logch.send(embed=embed_unban)
 
 	#---BANLIST---#
 	@commands.command(aliases=["bans", "blist"])
+	@commands.has_permissions(ban_members=True)
 	async def banlist(self, ctx):
 		"""Get all the ban entires for this server.
 		
 		Requirements:
 			Ban/Unban members"""
-		if ctx.author.guild_permissions.ban_members:
-			if len(await ctx.guild.bans()) != 0:
-				await ctx.send("\n".join([":hammer: Name: {.user.name} ID: {.user.id} Reason: {.reason}".format(entry, entry, entry) for entry in await ctx.guild.bans()]))
-			else:
-				await ctx.send("No bans are found inside of this server!")
+		if len(await ctx.guild.bans()) != 0:
+			await ctx.send("\n".join([":hammer: Name: {.user.name} ID: {.user.id} Reason: {.reason}".format(entry, entry, entry) for entry in await ctx.guild.bans()]))
+		else:
+			await ctx.send("No bans are found inside of this server!")
 
 
 def setup(bot):
