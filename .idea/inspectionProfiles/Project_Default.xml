@@ -27,6 +27,7 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="Owner.func" />
+          <option value="Developer.ctx" />
         </list>
       </option>
     </inspection_tool>
