@@ -6,6 +6,8 @@ Now, about the permissions my bot (currently) needs:
 
 **Kick/Ban Members** - The bot also is in power of kicking or banning users in various ways. Many of them are based off of filters, but there are direct kick and ban commands at hand too. Simply use *DD!kick* or *DD!ban* to make the job easier. If the bot lacks the permissions to do so, it will be aborted.
 
+**Manage Channels** - The bot will require permission to manage channels for the channel parent command.
+
 **Send/Manage Messages** - Some commands instantly delete the user's message once a special command is recognized. This is mostly used for owner/admin commands. Please make sure to check this. It will do no harm. Disabling this will also render the *DD!purge* command useless.
 
 ***About the bot***
