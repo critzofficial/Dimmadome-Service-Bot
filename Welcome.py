@@ -32,6 +32,9 @@ class Welcome:
         with open("../DSB_Files/welcome.json") as file:
             weldict = json.load(file)
         if str(member.guild.id) in weldict:
+            if member.guild.id == 475902932190101504:
+                role = discord.utils.get(member.guild.roles, id=475931350491332618)
+                await member.add_roles(role, reason="Member joined us!")
             channelID = int(weldict[str(member.guild.id)]["chID"])
             channel = self.bot.get_channel(channelID)
             msg = weldict[str(member.guild.id)]["msg"]
@@ -47,7 +50,10 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(member.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(member.guild.members)))
-            await channel.send(msg)
+            embed_welcome = discord.Embed(title=f"Welcome to {member.guild.name}!", description=msg, color=0x00FF00)
+            embed_welcome.set_image(url=member.avatar_url)
+            embed_welcome.set_footer(text=f"You are our member #{len(member.guild.members)} !")
+            await channel.send(embed=embed_welcome)
 
     ##----EVENT ON MEMBER LEAVE----##
     async def on_member_remove(self, member):
@@ -67,19 +73,31 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(member.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(member.guild.members)))
-            await channel.send(msg)
+            embed_leave = discord.Embed(title=f"{member.name} just left us...", description=msg, color=0xFF8800)
+            embed_leave.set_image(url=member.avatar_url)
+            embed_leave.set_footer(text=f"We are left with {len(member.guild.members)} members.")
+            await channel.send(embed=embed_leave)
 
-    #---SETWELCOME---#
-    @commands.command()
+    #---~WELCOME~---#
+    @commands.group()
     @commands.has_permissions(administrator=True)
-    async def setwelcome(self, ctx, channel: discord.TextChannel, *, message: str):
+    async def welcome(self, ctx):
+        """This is the parent command of the welcome commands. Channel and text are only required for setting.
+
+        Permissions:
+          Administrator"""
+        pass
+
+    #--SETW--#
+    @welcome.command()
+    async def setw(self, ctx, channel: discord.TextChannel, *, message: str):
         """Sets the welcome channel and message!
 
         Whenever a new user joins, bot or not, a message will be sent, when this is defined.
 
         Parameters:
-            channel - The channel to use. The channel must be mentioned. (e.g. #general)
-            message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
+          channel - The channel to use. The channel can be mentioned, named or ID'd.
+          message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
         with open("../DSB_Files/welcome.json", "r") as filetoread:
             srvdict = json.load(filetoread)
         srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
@@ -87,10 +105,9 @@ class Welcome:
             json.dump(srvdict, filetowrite)
         await say(ctx, ":white_check_mark: - Welcome message and channel set!")
 
-    #---TESTWELCOME---#
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def testwelcome(self, ctx):
+    #--TESTW--#
+    @welcome.command()
+    async def testw(self, ctx):
         """Tests the welcome channel and message!
 
         The bot must have access to send in the specific channel at *all* times."""
@@ -114,12 +131,14 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(ctx.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
-            await channel.send(msg)
+            embed_welcome = discord.Embed(title=f"Welcome to {ctx.guild.name}!", description=msg, color=0x00FF00)
+            embed_welcome.set_image(url=ctx.author.avatar_url)
+            embed_welcome.set_footer(text=f"You are our member #{len(ctx.guild.members)} !")
+            await channel.send(embed=embed_welcome)
 
-    #---DELWELCOME---#
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def delwelcome(self, ctx):
+    #--DELETEW--#
+    @welcome.command()
+    async def deletew(self, ctx):
         """Deletes the welcome settings for this guild.
 
         Both channel and message will get deleted."""
@@ -133,17 +152,25 @@ class Welcome:
                 json.dump(srvdict, filetowrite)
             await say(ctx, ":white_check_mark: - Welcome settings deleted!")
 
-    #---SETLEAVE---#
-    @commands.command()
+    #---~LEAVE~---#
+    @commands.group()
     @commands.has_permissions(administrator=True)
-    async def setleave(self, ctx, channel: discord.TextChannel, *, message: str):
+    async def leave(self, ctx):
+        """This is the parent command of the leave commands. Channel and text are only required for setting.
+
+        Permissions:
+          Administrator"""
+
+    #--SETL--#
+    @leave.command()
+    async def setl(self, ctx, channel: discord.TextChannel, *, message: str):
         """Sets the leave channel and message!
 
         Whenever an user leaves, bot or not, a message will be sent, when this is defined.
 
         Parameters:
-            channel - The channel to use. The channel must be mentioned. (e.g. #general)
-            message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
+          channel - The channel to use. The channel can be mentioned, named or ID'd.
+          message - The message to use. Please avoid using emojis, as they don't get saved properly!"""
         with open("../DSB_Files/leave.json", "r") as filetoread:
             srvdict = json.load(filetoread)
         srvdict[str(ctx.guild.id)] = {"chID": str(channel.id), "msg": str(message)}
@@ -151,10 +178,9 @@ class Welcome:
             json.dump(srvdict, filetowrite)
         await say(ctx, ":white_check_mark: - Leave message and channel set!")
 
-    #---TESTLEAVE---#
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def testleave(self, ctx):
+    #--TESTL--#
+    @leave.command()
+    async def testl(self, ctx):
         """Tests the leave channel and message!
 
         The bot must have access to send in the specific channel at *all* times."""
@@ -176,12 +202,14 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(ctx.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
-            await channel.send(msg)
+            embed_leave = discord.Embed(title=f"{ctx.author.name} just left us...", description=msg, color=0xFF8800)
+            embed_leave.set_image(url=ctx.author.avatar_url)
+            embed_leave.set_footer(text=f"We are left with {len(ctx.guild.members)} members.")
+            await channel.send(embed=embed_leave)
 
-    #---DELLEAVE---#
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def delleave(self, ctx):
+    #--DELETEL--#
+    @leave.command()
+    async def deletel(self, ctx):
         """Deletes the leave settings for this guild.
 
         Both channel and message will get deleted."""

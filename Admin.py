@@ -1,7 +1,8 @@
 from discord.ext import commands
 import discord
-import fs
 import os
+import fs
+import json
 
 
 async def say(ctx, cont: str):
@@ -10,6 +11,7 @@ async def say(ctx, cont: str):
 
 async def esay(ctx, embed: discord.Embed):
     return await ctx.send(embed=embed)
+
 
 ownerID = 255802794244571136
 
@@ -21,7 +23,7 @@ class Admin:
         self.bot = bot
 
     # ---PURGE---#
-    @commands.command(aliases=["prune", "bulkdel"])
+    @commands.command(aliases=["prune", "bulkdel", "clear"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def purge(self, ctx, number: int):
@@ -32,12 +34,345 @@ class Admin:
         The bot is also only able to purge messages effectively fast if they're newer than 2 weeks, and the rate is at 50 messages per 5 seconds. Any messages older than 2 weeks will be deleted one-by-one at a much slower rate. This rate is very slow, so avoid making the bot delete any older messages.
 
         Parameters:
-            number - The number of messages to prune. As said, max is 2000.
+          number - The number of messages to prune. As said, max is 2000.
 
         Permissions:
-            Manage messages"""
+          Manage messages"""
         numDel = await ctx.channel.purge(limit=number, bulk=True)
         await say(ctx, f":white_check_mark: - Deleted {len(numDel)} messages!")
+
+    ##----EVENT INVFILTER----##
+    async def on_message(self, message):
+        if message.guild.id != 264445053596991498 and (
+                "discord.gg/" in message.content or "discordapp.com/invite/" in message.content):
+            permvalue = message.channel.permissions_for(message.author)
+            if not permvalue.administrator:
+                await message.delete()
+                await message.channel.send(f":exclamation: - Please do not send invite links inside of this server!")
+                if fs.exists(f"../DSB_Files/log_of_{message.guild.id}.txt"):
+                    with open(f"../DSB_Files/log_of_{message.guild.id}.txt", "r") as file:
+                        chID = file.read()
+                    logch = self.bot.get_channel(int(chID))
+                else:
+                    logch = message.channel
+                embed_invitefilter = discord.Embed(title="Invite blocked",
+                                                   description="An invite has been blocked inside of this guild.",
+                                                   color=0xFFFF00)
+                embed_invitefilter.add_field(name="User who posted the invite", value=message.author.mention)
+                embed_invitefilter.add_field(name="Where the invite was blocked", value=f"<#{message.channel.id}>")
+                embed_invitefilter.add_field(name="Message content", value=message.content)
+                await logch.send(embed=embed_invitefilter)
+            else:
+                pass
+
+    def check1(ctx):
+        return ctx.guild.id == 475902932190101504
+
+    # ---MUTE---#
+    @commands.command()
+    @commands.check(check1)
+    @commands.has_permissions(manage_roles=True)
+    async def mute(self, ctx, member: discord.Member, *, reason: str = "No reason given."):
+        """Mutes an user inside of the guild.
+
+        The command currently has no time settings, so mutes are always permanent until manually undone.
+
+        Parameters:
+          member - The member to mute. Can be named, mentioned or ID'd.
+          reason - The reason. This is optional, but recommended."""
+        muterole = discord.utils.get(ctx.guild.roles, id=480069226430726145)
+        await member.add_roles(muterole, reason=reason)
+        await esay(ctx, discord.Embed(title="User muted!", description=f"{member} has been successfully muted.", color=0xFF8800))
+        embed_mute = discord.Embed(title="Admin Log: User muted", description="An user has been muted inside of this guild.", color=0xFF8800)
+        embed_mute.add_field(name="Admin", value=ctx.author)
+        embed_mute.add_field(name="Muted User", value=member)
+        embed_mute.add_field(name="Reason", value=reason)
+        if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+            with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                chID = file.read()
+            logch = self.bot.get_channel(int(chID))
+        else:
+            logch = ctx
+        await esay(logch, embed_mute)
+
+    # ---UNMUTE---#
+    @commands.command()
+    @commands.check(check1)
+    @commands.has_permissions(manage_roles=True)
+    async def unmute(self, ctx, member: discord.Member, *, reason: str = "No reason given."):
+        """Unmutes an user inside of the guild.
+
+        Parameters:
+          member - The member to unmute. Can be named, mentioned or ID'd.
+          reason - The reason. This is optional, but recommended."""
+        muterole = discord.utils.get(ctx.guild.roles, id=480069226430726145)
+        await member.remove_roles(muterole, reason=reason)
+        await esay(ctx, discord.Embed(title="User unmuted!", description=f"{member} has been successfully unmuted.", color=0xFF8800))
+        embed_unmute = discord.Embed(title="Admin Log: User unmuted", description="An user has been unmuted inside of this guild.", color=0xFF8800)
+        embed_unmute.add_field(name="Admin", value=ctx.author)
+        embed_unmute.add_field(name="Unmuted User", value=member)
+        embed_unmute.add_field(name="Reason", value=reason)
+        if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+            with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                chID = file.read()
+            logch = self.bot.get_channel(int(chID))
+        else:
+            logch = ctx
+        await esay(logch, embed_unmute)
+
+    # ---~EMBED~---#
+    @commands.group(brief="Manage and create personal embeds! (WIP)")
+    @commands.has_permissions(administrator=True)
+    async def embed(self, ctx):
+        """This is the parent command for the embed commands. Check each command's functionality!
+
+        ~WARNING!~ This command is yet under construction. It may be unstable. Please do not use it until this warning has been removed!
+
+        Permissions:
+          Administrator"""
+
+    # --CREATE--#
+    @embed.command()
+    async def create(self, ctx):
+        """Create a embed template, or reset your current one!
+
+        No parameters required. It makes a basic template with a title, description and green color."""
+        with open("../DSB_Files/embeds.json", "r") as filetoread:
+            embedsdict = json.load(filetoread)
+        embedsdict[str(ctx.guild.id)] = {"title": "Title here!", "description": "Description here!", "color": 0x00FF00, "field_num": 0}
+        with open("../DSB_Files/embeds.json", "w") as filetowrite:
+            json.dump(embedsdict, filetowrite)
+        await esay(ctx, discord.Embed(title="Template created!", description="The template for this server has been created, happy editing!", color=0x00FF00))
+
+    # --POST--#
+    @embed.command()
+    async def post(self, ctx):
+        """Post your made embed!"""
+        with open("../DSB_Files/embeds.json", "r") as file:
+            embedsdict = json.load(file)
+        try:
+            title = embedsdict[str(ctx.guild.id)]["title"]
+            if title == "-":
+                title = discord.Embed.Empty
+            description = embedsdict[str(ctx.guild.id)]["description"]
+            color = embedsdict[str(ctx.guild.id)]["color"]
+            embed_custom = discord.Embed(title=title, description=description, color=color)
+            await esay(ctx, embed_custom)
+        except KeyError:
+            await say(ctx, ":interrobang: - The bot had problems loading the embed! Did you even create one? ``DD!embed create``")
+
+    # --SETTITLE--#
+    @embed.command()
+    async def settitle(self, ctx, *, text: str):
+        """Set a custom title!
+
+        The title is the first bold text inside of an embed. The title does not need to be specified, only the description is mandatory. To remove the title, simply type in '-'."""
+        with open("../DSB_Files/embeds.json", "r") as filetoread:
+            embedsdict = json.load(filetoread)
+        try:
+            embedsdict[str(ctx.guild.id)]["title"] = text
+            with open("../DSB_Files/embeds.json", "w") as filetowrite:
+                json.dump(embedsdict, filetowrite)
+            await say(ctx, ":white_check_mark: - Embed title set to -> " + embedsdict[str(ctx.guild.id)]["title"] + " <- !")
+        except KeyError:
+            await say(ctx, ":interrobang: - The bot had problems saving the settings! Did you even create a template? ``DD!embed create``")
+
+    # --SETDESC--#
+    @embed.command()
+    async def setdesc(self, ctx, *, text: str):
+        """Sets a custom description!
+
+        The title is the first field of regular text of an embed. The description is minimally required to let an embed be postable."""
+        with open("../DSB_Files/embeds.json", "r") as filetoread:
+            embedsdict = json.load(filetoread)
+        try:
+            embedsdict[str(ctx.guild.id)]["description"] = text
+            with open("../DSB_Files/embeds.json", "w") as filetowrite:
+                json.dump(embedsdict, filetowrite)
+            await say(ctx, ":white_check_mark: - Embed description set to -> " + embedsdict[str(ctx.guild.id)]["description"] + "<- !")
+        except KeyError:
+            await say(ctx, ":interrobang: - The bot had problems saving the settings! Did you even create a template? ``DD!embed create``")
+
+    # --SETFIELDNUM--#
+    @embed.command()
+    async def setfieldnum(self, ctx, num: int):
+        """Sets the number of fields for the embed to use.
+
+        PLEASE NOTICE!
+        Defining a new field number will reset all fields."""
+        with open("../DSB_Files/embeds.json", "r") as filetoread:
+            embedsdict = json.load(filetoread)
+        try:
+            embedsdict[str(ctx.guild.id)]["fieldcount"] = num
+            for x in num:
+                exec("embedsdict[str(ctx.guild.id)][\"field_{" + str(x) + "}\"] = {\"name\": \"Field " + str(x) + " Name\", \"value\": \"Field " + str(x) + " Value\"}")
+            with open("../DSB_Files/embeds.json", "w") as filetowrite:
+                json.dump(embedsdict, filetowrite)
+            await say(ctx, f":white_check_mark: - Embed field count set to {num}!")
+        except KeyError:
+            await say(ctx, ":interrobang: - The bot had problems saving the settings! Did you even create a template? ``DD!embed create``")
+
+    # ---~WARN~---#
+    @commands.group(brief="Manage warns on users!")
+    async def warn(self, ctx):
+        """This is the parent command for the warn/unwarn commands. Check each command's functionality!
+
+       Permissions:
+         Kick members/Ban members for 'add', kick members for 'remove', administrator for 'set' and 'setlimit'."""
+
+        pass
+
+    # --SETLIMIT--#
+    @warn.command()
+    @commands.has_permissions(administrator=True)
+    async def setlimit(self, ctx, number: int):
+        """Set the warn limit!
+
+        Defaults to 3."""
+        with open("../DSB_Files/warns.json", "r") as filetoread:
+            warnsdict = json.load(filetoread)
+        warnsdict[ctx.guild.id] = {"limit": number}
+        with open("../DSB_Files/warns.json", "w") as filetowrite:
+            json.dump(warnsdict, filetowrite)
+        await esay(ctx, discord.Embed(title="Limit set!", description=f"The warn limit for this server has been set to {number}!"))
+
+    # --ADD--#
+    @warn.command()
+    @commands.has_permissions(kick_members=True, ban_members=True)
+    async def add(self, ctx, member: discord.Member, *, reason: str="No reason specified."):
+        """Warns an user!
+
+        If the warns and limit equal, the user will be kicked. However, a warn number that exceeds the limit will cause the bot to ban the user."""
+        with open("../DSB_Files/warns.json", "r") as filetoread:
+            warnsdict = json.load(filetoread)
+        try:
+            warnlimit = warnsdict[str(ctx.guild.id)]["limit"]
+        except KeyError:
+            warnlimit = 3
+        try:
+            pastwarns = warnsdict[str(ctx.guild.id)][str(member.id)]
+            warnsdict[str(ctx.guild.id)][str(member.id)] = pastwarns + 1
+        except KeyError:
+            warnsdict[str(ctx.guild.id)] = {str(member.id): 1}
+        finally:
+            if warnsdict[str(ctx.guild.id)][str(member.id)] < warnlimit:
+                await esay(ctx, discord.Embed(title="User warned!", description=f"User {member.mention} has been successfully warned. He currently has {warnsdict[str(ctx.guild.id)][str(member.id)]} warns.", color=0xFFFF00))
+                if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+                    with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                        chID = file.read()
+                    logch = self.bot.get_channel(int(chID))
+                else:
+                    logch = ctx
+                embed_warned = discord.Embed(title="Admin Log: User warn", description="An user has been warned inside of this guild.", color=0xFFFF00)
+                embed_warned.add_field(name="Admin", value=ctx.author.mention)
+                embed_warned.add_field(name="Warned user", value=member.mention)
+                embed_warned.add_field(name="Reason", value=reason)
+                await esay(logch, embed_warned)
+            elif warnsdict[str(ctx.guild.id)][str(member.id)] == warnlimit:
+                await member.kick(reason=f"[WARN] - Warns have been exceeded. The warn has been executed by {ctx.author} . The reason for the warn is: {reason}")
+                await esay(ctx, discord.Embed(title="User kicked!", description=f"User {member} has been kicked due to exceeded warns. The next warn will result in a ban!", color=0xFFFF00))
+                if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+                    with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                        chID = file.read()
+                    logch = self.bot.get_channel(int(chID))
+                else:
+                    logch = ctx
+                embed_warnkicked = discord.Embed(title="Admin Log: User warn-kick", description="An user has been warned and warns have been exceeded, the user has been kicked.", color=0xFFFF00)
+                embed_warnkicked.add_field(name="Admin", value=ctx.author.mention)
+                embed_warnkicked.add_field(name="Kicked user", value=member)
+                embed_warnkicked.add_field(name="Reason", value=reason)
+                await esay(logch, embed_warnkicked)
+            elif warnsdict[str(ctx.guild.id)][str(member.id)] > warnlimit:
+                await member.ban(reason=f"[WARN] - Warns have been exceeded. The warn has been executed by {ctx.author} . The reason for the warn is: {reason}")
+                await esay(ctx, discord.Embed(title="User banned!", description=f"User {member} has been banned due to exceeded warns.", color=0xFFFF00))
+                if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+                    with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                        chID = file.read()
+                    logch = self.bot.get_channel(int(chID))
+                else:
+                    logch = ctx
+                embed_warnbanned = discord.Embed(title="Admin Log: User warn-ban",
+                                                 description="An user has been warned and warns have been exceeded, the user has been banned.",
+                                                 color=0xFFFF00)
+                embed_warnbanned.add_field(name="Admin", value=ctx.author.mention)
+                embed_warnbanned.add_field(name="Banned user", value=member)
+                embed_warnbanned.add_field(name="Reason", value=reason)
+                await esay(logch, embed_warnbanned)
+            with open("../DSB_Files/warns.json", "w") as filetowrite:
+                json.dump(warnsdict, filetowrite)
+
+    # --REMOVE--#
+    @warn.command()
+    @commands.has_permissions(kick_members=True)
+    async def remove(self, ctx, member: discord.Member, reason: str = "No reason specified."):
+        """Unwarns an user!
+
+        The warns are set to 0."""
+        nowarnfound = False
+        with open("../DSB_Files/warns.json", "r") as filetoread:
+            warnsdict = json.load(filetoread)
+        try:
+            warnsdict[str(ctx.guild.id)][str(member.id)] = 0
+        except KeyError:
+            nowarnfound = True
+            await say(ctx, ":interrobang: - The mentioned user has never been warned!")
+        finally:
+            if not nowarnfound:
+                await esay(ctx, discord.Embed(title="Warns cleaned!", description=f"User {member} is no longer warned!", color=0x00FF00))
+                if fs.exists(f"../DSB_Files/log_of_{ctx.guild.id}.txt"):
+                    with open(f"../DSB_Files/log_of_{ctx.guild.id}.txt", "r") as file:
+                        chID = file.read()
+                    logch = self.bot.get_channel(int(chID))
+                else:
+                    logch = ctx
+                embed_warncleaned = discord.Embed(title="Admin Log: User unwarn", description="An user has been unwarned inside of this guild.", color=0xFFFF00)
+                embed_warncleaned.add_field(name="Admin", value=ctx.author.mention)
+                embed_warncleaned.add_field(name="Unwarned user", value=member.mention)
+                embed_warncleaned.add_field(name="Reason", value=reason)
+                await esay(logch, embed_warncleaned)
+                with open("../DSB_Files/warns.json", "w") as filetowrite:
+                    json.dump(warnsdict, filetowrite)
+            else:
+                pass
+
+    # --SET--#
+    @warn.command()
+    @commands.has_permissions(administrator=True)
+    async def set(self, ctx, member: discord.Member, number: int):
+        """'Hardcode' an user's warns!
+
+        This command can set the warns of an user at a desired amount. Please keep in mind that this command is not capable of kicking/banning users if the limit has been hit or exceeded."""
+        with open("../DSB_Files/warns.json", "r") as filetoread:
+            warnsdict = json.load(filetoread)
+        try:
+            warnsdict[str(ctx.guild.id)][str(member.id)] = number
+        except KeyError:
+            warnsdict[str(ctx.guild.id)] = {member.id: number}
+        finally:
+            with open("../DSB_Files/warns.json", "w") as filetowrite:
+                json.dump(warnsdict, filetowrite)
+            await esay(ctx, discord.Embed(title="Warns have been set!", description=f"The warns of {member.mention} have been set to {number}!", color=0x00FF00))
+
+    # --CHECK--#
+    @warn.command()
+    async def check(self, ctx, member: discord.Member=None):
+        """Checks the limit and, if given, member's warns!"""
+        warnlimit = 3
+        memberwarns = 0
+        nicedescription = f"The limit of the server's warns is set to {warnlimit}."
+        with open("../DSB_Files/warns.json", "r") as filetoread:
+            warnsdict = json.load(filetoread)
+        try:
+            warnlimit = warnsdict[str(ctx.guild.id)]["limit"]
+        except KeyError:
+            pass
+        if member != None:
+            try:
+                memberwarns = warnsdict[str(ctx.guild.id)][str(member.id)]
+            except KeyError:
+                pass
+            nicedescription = f"The member's warns are currently at {memberwarns} and the limit of the server's warns is set to {warnlimit}."
+        await esay(ctx, discord.Embed(title="Information gathered!", description=nicedescription, color=0x00FF00))
 
     # ---SETLOG---#
     @commands.command()
@@ -46,10 +381,10 @@ class Admin:
         """Sets the log channel.
 
         Parameters:
-            channel - The channel used for the logs. The channel has to be mentioned normally and the bot needs to be able to read and send to it.
+          channel - The channel used for the logs. The channel has to be mentioned normally and the bot needs to be able to read and send to it.
 
         Permissions:
-            Administrator"""
+          Administrator"""
         if channel != None:
             fs.write(f"../DSB_Files/log_of_{ctx.guild.id}.txt", str(channel.id))
             await say(ctx, ":white_check_mark: - Log Channel set!")
@@ -65,18 +400,21 @@ class Admin:
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason: str = None):
-        """Kicks a mentioned user from the current guild.
+        """Kicks an user from the current guild.
 
         Parameters:
-            member - The user to kick. The user must be mentioned.
-            reason - (Optional) The reason for the kick. You can leave this empty. The reason will be shown inside of the audit log.
+          member - The user to kick. The user can be mentioned, named or ID'ed.
+          reason - (Optional) The reason for the kick. You can leave this empty. The reason will be shown inside of the audit log.
 
         Permissions:
-            Kick members"""
+          Kick members"""
         if member != None:
             await member.kick(reason=f"Kicked by {ctx.author}: {reason}")
-            await esay(ctx, discord.Embed(title=f"Kicked member {member}", description=f"Member {member} has been successfully kicked from this guild!", color=0xFF0000))
-            embed_kick = discord.Embed(title="Admin log: Member kick", description="A kick has been issued inside of this server.", color=0xFF0000)
+            await esay(ctx, discord.Embed(title=f"Kicked member {member}",
+                                          description=f"Member {member} has been successfully kicked from this guild!",
+                                          color=0xFF0000))
+            embed_kick = discord.Embed(title="Admin log: Member kick",
+                                       description="A kick has been issued inside of this server.", color=0xFF0000)
             embed_kick.add_field(name="Admin", value=ctx.author)
             embed_kick.add_field(name="Kicked member", value=member)
             embed_kick.add_field(name="Reason", value=reason, inline=False)
@@ -95,17 +433,20 @@ class Admin:
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, *, reason: str = None):
-        """Bans a mentioned user from the current guild.
+        """Bans an user from the current guild.
 
         Parameters:
-            member - The user to ban. The user must be mentioned.
-            reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
+          member - The user to ban. The user can be mentioned, named or ID'ed.
+          reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
 
         Permissions:
-            Ban/Unban members"""
+          Ban/Unban members"""
         await member.ban(reason=f"Banned by {ctx.author}: {reason}")
-        await esay(ctx, discord.Embed(title=f"Banned member {member}", description=f"Member {member} has been successfully banned from this guild!", color=0xFF0000))
-        embed_ban = discord.Embed(title="Admin log: Member ban", description="A ban has been issued inside of this server.", color=0xFF0000)
+        await esay(ctx, discord.Embed(title=f"Banned member {member}",
+                                      description=f"Member {member} has been successfully banned from this guild!",
+                                      color=0xFF0000))
+        embed_ban = discord.Embed(title="Admin log: Member ban",
+                                  description="A ban has been issued inside of this server.", color=0xFF0000)
         embed_ban.add_field(name="Admin", value=ctx.author)
         embed_ban.add_field(name="Banned member", value=member)
         embed_ban.add_field(name="Reason", value=reason, inline=False)
@@ -122,20 +463,23 @@ class Admin:
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def hackban(self, ctx, userID: int, *, reason: str = None):
-        """Bans a user by ID from the current guild. (Credit goes to DakotaBot by KazWolfe for the command name, this is to not get copyrighted :3)
+        """Bans a user by ID from the current guild.
 
         This ban is special, as it can ban users that aren't inside of the guild at all. However, their ID is required for this.
 
         Parameters:
-            userID - The ID of the user to ban. Only integers (numeric characters) are accepted.
-            reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
+          userID - The ID of the user to ban. Only integers (numeric characters) are accepted.
+          reason - (Optional) The reason for the ban. You can leave this empty. The reason will be shown inside of the audit log.
 
         Permissions:
-            Ban/Unban members"""
+          Ban/Unban members"""
         user = await self.bot.get_user_info(user_id=userID)
         await ctx.guild.ban(user, delete_message_days=0, reason=f"[HACKBAN] Banned by {ctx.author}: {reason}")
-        await esay(ctx, discord.Embed(title=f"Banned member {user}", description=f"Member {user} has been successfully banned from this guild!", color=0xFF0000))
-        embed_hban = discord.Embed(title="Admin log: Hackban", description="A hackban has been issued inside of this server.", color=0xFF0000)
+        await esay(ctx, discord.Embed(title=f"Banned member {user}",
+                                      description=f"Member {user} has been successfully banned from this guild!",
+                                      color=0xFF0000))
+        embed_hban = discord.Embed(title="Admin log: Hackban",
+                                   description="A hackban has been issued inside of this server.", color=0xFF0000)
         embed_hban.add_field(name="Admin", value=ctx.author)
         embed_hban.add_field(name="Hackbanned member", value=user)
         embed_hban.add_field(name="Reason", value=reason, inline=False)
@@ -155,15 +499,18 @@ class Admin:
         """Unbans a banned user from the current guild.
 
         Parameters:
-            memID - The ID of the member to be unbanned. You can either find it yourself or use *DD!banlist* to get it.
-            reason - (Optional) The reason for the unban. You can leave this empty. The reason will be shown inside of the audit log.
+          memID - The ID of the member to be unbanned. You can either find it yourself or use *DD!banlist* to get it.
+          reason - (Optional) The reason for the unban. You can leave this empty. The reason will be shown inside of the audit log.
 
         Permissions:
-            Ban/Unban members"""
+          Ban/Unban members"""
         memObj = self.bot.get_user_info(user_id=int(memID))
         await memObj.unban(reason=f"Unbanned by {ctx.author}: {reason}")
-        await esay(ctx, discord.Embed(title=f"Unbanned member {memObj.name}", description=f"Member {memObj.name} has been successfully unbanned from this guild!", color=0x00FF00))
-        embed_unban = discord.Embed(title="Admin log: Member unban", description="An unban has been issued inside of this server.", color=0x00FF00)
+        await esay(ctx, discord.Embed(title=f"Unbanned member {memObj.name}",
+                                      description=f"Member {memObj.name} has been successfully unbanned from this guild!",
+                                      color=0x00FF00))
+        embed_unban = discord.Embed(title="Admin log: Member unban",
+                                    description="An unban has been issued inside of this server.", color=0x00FF00)
         embed_unban.add_field(name="Admin", value=ctx.author)
         embed_unban.add_field(name="Unbanned member", value=memObj)
         embed_unban.add_field(name="Reason", value=reason, inline=False)
@@ -183,7 +530,7 @@ class Admin:
         """Get all the ban entires for this server.
 
         Requirements:
-            Ban/Unban members"""
+          Ban/Unban members"""
         if len(await ctx.guild.bans()) != 0:
             await say(ctx, "\n".join(
                 [":hammer: Name: {.user.name} ID: {.user.id} Reason: {.reason}".format(entry, entry, entry) for entry in
@@ -192,18 +539,18 @@ class Admin:
             await say(ctx, "No bans are found inside of this server!")
 
     # ---~CHANNEL~---#
-    @commands.group()
+    @commands.group(brief="Manage channels!")
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     async def channel(self, ctx):
         """This is the parent command of the 'channel' commands. Each command will serve a different purpose and will require different parameters. Check each command before using them!
 
         Permissions:
-            Manage channels"""
+          Manage channels"""
 
-    # ---ADD---#
+    # --CREATE--#
     @channel.command(brief="Create a channel.")
-    async def add(self, ctx, name="new-channel", nsfw=False, *, topic=None):
+    async def create(self, ctx, name="new-channel", nsfw=False, *, topic=None):
         """Creates a channel inside of the current guild."""
         crch = await ctx.guild.create_text_channel(name=name, reason=f"Created by {ctx.author} - {ctx.author.id}")
         if nsfw:
@@ -212,7 +559,7 @@ class Admin:
             await crch.edit(reason=f"Created by {ctx.author} - {ctx.author.id} with a topic.", topic=topic)
         await say(ctx, f":white_check_mark: - Channel {crch.name} - {crch.id} - <#{crch.id}> created!")
 
-    # ---EDIT---#
+    # --EDIT--#
     @channel.command(brief="Edit a channel.")
     async def edit(self, ctx, target: discord.TextChannel, nsfw=False, name=None):
         """Edits a channel inside of the current guild. Channels can get edited using their name, ID or mention."""
@@ -222,9 +569,9 @@ class Admin:
             await target.edit(reason=f"Edited by {ctx.author} - {ctx.author.id}", nsfw=nsfw, name=name)
         await say(ctx, f":white_check_mark: - Channel edited!")
 
-    # ---DELETE---#
+    # --DELETE--#
     @channel.command(brief="Delete a channel.")
-    async def delete(self, ctx, target: discord.TextChannel, *, reason: str="No reason provided."):
+    async def delete(self, ctx, target: discord.TextChannel, *, reason: str = "No reason provided."):
         """Deletes a channel from the current guild. Channels can get edited using their name, ID or mention."""
         await target.delete(reason=f"Deleted by {ctx.author} - {ctx.author.id} -- " + reason)
         await say(ctx, f":white_check_mark: - Channel deleted!")

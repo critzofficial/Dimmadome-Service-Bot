@@ -28,6 +28,9 @@
         <list>
           <option value="Owner.func" />
           <option value="Developer.ctx" />
+          <option value="Owner.Owner.author" />
+          <option value="Utility.Utility.guild" />
+          <option value="Admin.Admin.guild" />
         </list>
       </option>
     </inspection_tool>

@@ -4,14 +4,15 @@ import asyncio
 import sys
 import traceback
 import fs
+import random
 
 description = """Welcome to the help section of Dimmadome Service Bot!
 
 All I can really say here is that you should check each command category/usage before using anything. There are some twists that I can't change, unfortunately.
 
-Also, note that this bot can be mentioned too to execute commands, however the bot is not allowed to have any nickname. Both the prefix and the mention work."""
+Also, note that this bot can be mentioned in 3 ways: using 'L.', a backslash or a mention."""
 
-bot = commands.Bot(command_prefix=["DD!", "<@269533424916627457> "], description=description)
+bot = commands.Bot(command_prefix=["L.", "/", "<@269533424916627457> "], description=description)
 
 initial_extensions = ["Utility", "Owner", "Admin", "Welcome"]
 
@@ -73,7 +74,22 @@ async def reloadext(ctx, ext):
 @asyncio.coroutine
 async def on_ready():
     print("Ready to go!")
-    await bot.change_presence(activity=discord.Game(name="| DD!help |"))
+    await bot.change_presence(activity=discord.Game(name="| /help |"))
+    list_keychars = []
+    for i in range(20):
+        list_choice = []
+        x = random.randint(65, 90)
+        list_choice.append(x)
+        y = random.randint(97, 122)
+        list_choice.append(y)
+        z = random.randint(48, 57)
+        list_choice.append(z)
+        chooser = random.choice(list_choice)
+        converted = chr(chooser)
+        list_keychars.append(str(converted))
+    passcode = "".join(list_keychars)
+    print("The password is: " + passcode)
+    fs.write("../DSB_Files/ultra_secret_passcode.txt", passcode)
 
 
 @bot.event
