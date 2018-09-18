@@ -31,6 +31,7 @@
           <option value="Owner.Owner.author" />
           <option value="Utility.Utility.guild" />
           <option value="Admin.Admin.guild" />
+          <option value="Admin.Admin.author" />
         </list>
       </option>
     </inspection_tool>

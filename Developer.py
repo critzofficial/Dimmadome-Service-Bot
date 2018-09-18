@@ -1,8 +1,6 @@
 from discord.ext import commands
 import discord
 import random
-import time
-import asyncio
 
 
 async def say(ctx, cont: str):
@@ -25,12 +23,10 @@ class Developer:
     @commands.command()
     @commands.is_owner()
     async def test(self, ctx):
-        x = int(round(time.time() * 1000))
-        await say(ctx, x)
-        await say(ctx, "Repeating by auto in 1 minute.")
-        await asyncio.sleep(60)
-        y = int(round(time.time() * 1000))
-        await say(ctx, y)
+        dict1 = {"apples": 2, "pears": 10}
+        dict1.setdefault("pineapples", 5)
+        await say(ctx, str(dict1["pineapples"]))
+        await say(ctx, str(dict1))
 
     #Flexible Rules Command
     @commands.command()

@@ -131,6 +131,7 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(ctx.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
+            await channel.send(":robot: - The following welcome message will be a test run!")
             embed_welcome = discord.Embed(title=f"Welcome to {ctx.guild.name}!", description=msg, color=0x00FF00)
             embed_welcome.set_image(url=ctx.author.avatar_url)
             embed_welcome.set_footer(text=f"You are our member #{len(ctx.guild.members)} !")
@@ -202,6 +203,7 @@ class Welcome:
                 msg = msg.replace("{SRVID}", str(ctx.guild.id))
             if "{SRVCOUNT}" in msg:
                 msg = msg.replace("{SRVCOUNT}", str(len(ctx.guild.members)))
+            await channel.send(":robot: - The following leave message will be a test run!")
             embed_leave = discord.Embed(title=f"{ctx.author.name} just left us...", description=msg, color=0xFF8800)
             embed_leave.set_image(url=ctx.author.avatar_url)
             embed_leave.set_footer(text=f"We are left with {len(ctx.guild.members)} members.")

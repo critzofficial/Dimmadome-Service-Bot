@@ -88,19 +88,34 @@ class Owner:
     @commands.command()
     @commands.check(is_verified)
     #@commands.is_owner()
-    async def quickui(self, ctx, *, user: discord.User):
+    async def quickui(self, ctx, *, user: int):
         """Shows some quick info about a special user.
 
         Parameters:
-          user - The user to look for.
+          user - The user to look for. ID required!
 
         Requirements:
           Bot ownership/Verification"""
-        embed_qui = discord.Embed(title="Name", description=user.name)
+        user = await self.bot.get_user_info(user_id=user)
+        embed_qui = discord.Embed(title="Name#Discriminator", description=f"{user.name}#{user.discriminator}")
         embed_qui.set_thumbnail(url=user.avatar_url)
         embed_qui.add_field(name="ID", value=user.id)
         embed_qui.add_field(name="Date of Account Creation", value=user.created_at.strftime("%A, %d. %B %Y %H:%M"))
         await esay(ctx, embed_qui)
+
+    #---SETNAME---#
+    @commands.command()
+    @commands.is_owner()
+    async def setname(self, ctx, *, name: str):
+        """Sets the bot's name!
+
+        Parameters:
+          name - The name to set.
+
+        Requirements:
+          Bot ownership"""
+        await self.bot.user.edit(username=name)
+        await say(ctx, ":white_check_mark: - Name changed!")
 
 
 def setup(bot):

@@ -5,16 +5,27 @@ import sys
 import traceback
 import fs
 import random
+import json
 
-description = """Welcome to the help section of Dimmadome Service Bot!
+description = """Welcome to the help section of DummyBot!
 
 All I can really say here is that you should check each command category/usage before using anything. There are some twists that I can't change, unfortunately.
 
-Also, note that this bot can be mentioned in 3 ways: using 'L.', a backslash or a mention."""
+Also, note that this bot can be mentioned in 3 ways: using 'D.', a backslash or a mention."""
 
-bot = commands.Bot(command_prefix=["L.", "/", "<@269533424916627457> "], description=description)
 
-initial_extensions = ["Utility", "Owner", "Admin", "Welcome"]
+async def prefix(_, message):
+    with open("../DSB_Files/prefixes.json", "r") as file:
+        cpredict = json.load(file)
+    try:
+        cpre = cpredict[str(message.guild.id)]
+        return ["D.", "/", "<@269533424916627457> ", cpre]
+    except KeyError:
+        return ["D.", "/", "<@269533424916627457> "]
+
+bot = commands.Bot(command_prefix=prefix, description=description)
+
+initial_extensions = ["Utility", "Owner", "Admin", "Welcome", "Economy"]
 
 
 @bot.command(hidden=True)
@@ -74,7 +85,7 @@ async def reloadext(ctx, ext):
 @asyncio.coroutine
 async def on_ready():
     print("Ready to go!")
-    await bot.change_presence(activity=discord.Game(name="| /help |"))
+    await bot.change_presence(activity=discord.Game(name="| D.help |"))
     list_keychars = []
     for i in range(20):
         list_choice = []

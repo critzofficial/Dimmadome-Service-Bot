@@ -4,14 +4,7 @@ import time
 import hashlib
 import names
 from faker import Faker
-from samp_client.client import SampClient
 fake = Faker()
-
-address = "23.94.75.34"
-port = 7797
-
-with SampClient(address=address, port=port) as client:
-    serverinfo = client.get_server_info()
 
 
 async def say(ctx, cont: str):
@@ -30,36 +23,6 @@ class Utility:
     def __init__(self, bot):
         self.bot = bot
 
-    #---DIY <3---#
-    @commands.command(aliases=["diy"])
-    async def diytech(self, ctx):
-        """Join the DIY Tech server!"""
-        owner = await self.bot.get_user_info(user_id=ownerID)
-        embed_diy = discord.Embed(title="DIY Tech", description="DIY Tech is a server dedicated to the assistance of all users that may experience any kind of technology related problems. They can help you with coding, setting up your new PC, software errors and beyond! The server has a custom invite link too, since it's partnered with Discord.", color=0x00FFFF)
-        embed_diy.add_field(name="Want to join?", value="Simply click [here](http://discordapp.com/invite/diytech) to join the server!")
-        embed_diy.add_field(name="Why should I join?", value="As the server name suggests (and it has been explained already), the server is dedicated to help users with their tech questions and problems! However, you don't *have* to have a question or problem - just goof around in the off-topic and meme channels!")
-        embed_diy.add_field(name="How big is the server?", value="The server has hit 3k recently, however, the number of users has fallen again. We're still around 3000 members, however!")
-        embed_diy.add_field(name="Anything else you should know?", value="As per usual, please read the rules and info, feel free to ask staff any questions and enjoy your stay!")
-        embed_diy.set_footer(text="Permission for this embed was given by Robben.")
-        embed_diy.set_author(name="CritZ#7054", icon_url=owner.avatar_url)
-        await esay(ctx, embed_diy)
-
-    def is_correct_server(ctx):
-        return ctx.guild.id == 475902932190101504
-
-    #---SERVERINFO---#
-    @commands.command()
-    @commands.check(is_correct_server)
-    async def serverinfo(self, ctx):
-        """Get the info of the SA:MP server Los Santos Gaming!"""
-        embed_info = discord.Embed(title="Server Info", description=f"Some server information about {serverinfo.hostname} !", color=0x00FF00)
-        embed_info.set_thumbnail(url=ctx.guild.icon_url)
-        embed_info.add_field(name="IP", value=f"{address}:{port}")
-        embed_info.add_field(name="Gamemode", value=serverinfo.gamemode)
-        embed_info.add_field(name="Max Player Count", value=serverinfo.max_players)
-        embed_info.add_field(name="Current Player Count", value=serverinfo.players)
-        await esay(ctx, embed_info)
-
     #---PING---#
     @commands.command(aliases=["p"])
     async def ping(self, ctx):
@@ -77,7 +40,7 @@ class Utility:
 
         Parameters:
           suggestion - What you suggest goes here. It will be sent to the owner *pronto*!"""
-        suggch = self.bot.get_channel(480052144938942465)
+        suggch = self.bot.get_channel(454695415611260928)
         embed_suggest = discord.Embed(title=ctx.author.name, description=ctx.author.id, color=0x00FF00).set_thumbnail(url=ctx.author.avatar_url)
         embed_suggest.add_field(name=ctx.guild.name, value=ctx.guild.id, inline=False)
         embed_suggest.add_field(name="Suggestion", value=suggestion, inline=False)
@@ -96,10 +59,7 @@ class Utility:
     #---NAME GENERATOR---#
     @commands.command(aliases=["ng"])
     async def namegen(self, ctx):
-        """Generate a 'fake' name!
-
-        Parameters:
-          gender - The gender to use. Only correct inputs are 'Male' and 'Female', case sensitive! Defaults to None, which makes the name be at random gender."""
+        """Generate a 'fake' name!"""
         genname = names.get_full_name()
         await say(ctx, f":abc: - Your generated name is ``{genname}``! They live at ``{fake.address()}``.")
 
@@ -146,6 +106,17 @@ class Utility:
                 await esay(ctx, embed_userstats_out)
             else:
                 await say(ctx, ":interrobang: - The given information hasn't resulted a guild member. If your intention is to get an User, please use a valid ID!")
+
+    #---AVATAR---#
+    @commands.command()
+    async def avatar(self, ctx, *, member: discord.Member):
+        """Check someone's avatar!
+
+        Parameters:
+          member - The member to use."""
+        embed_avatar = discord.Embed(title="Here is your avatar!", description="Isn't that sexy?", color=0x00FF00)
+        embed_avatar.set_image(url=member.avatar_url)
+        await esay(ctx, embed_avatar)
 
     #---ABOUT---#
     @commands.command()
